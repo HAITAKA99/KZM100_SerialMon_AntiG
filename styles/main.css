@@ -1,0 +1,752 @@
+/**
+ * main.css
+ * かざみんリアルタイムモニター (Web Serial Monitor) スタイルシート
+ */
+
+:root {
+  --bg-primary: #0b1329;
+  --bg-card: #131f3d;
+  --bg-card-hover: #19294f;
+  --bg-input: #1a294c;
+  --border-color: #243660;
+  --border-light: #334d85;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --accent-cyan: #00f0ff;
+  --accent-blue: #38bdf8;
+  --accent-green: #22c55e;
+  --accent-yellow: #eab308;
+  --accent-red: #ef4444;
+
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* アプリケーション全体コンテナ */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 12px 16px;
+  gap: 16px;
+}
+
+/* ヘッダーエリア */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-version {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  background-color: rgba(0, 240, 255, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* デジタル時計 */
+.digital-clock-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background-color: rgba(11, 19, 41, 0.8);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.clock-date {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.clock-time {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+}
+
+/* 接続ボタン & デモモード */
+.serial-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0284c7, #00f0ff);
+  color: #0b1329;
+  box-shadow: 0 2px 8px rgba(0, 240, 255, 0.3);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--accent-cyan);
+}
+
+.btn-demo {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--accent-yellow);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.btn-demo.active {
+  background: linear-gradient(135deg, #ca8a04, #eab308);
+  color: #0b1329;
+  font-weight: 700;
+}
+
+.connection-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.connection-status-dot.connected {
+  background-color: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+}
+
+.connection-status-dot.demo {
+  background-color: var(--accent-yellow);
+  box-shadow: 0 0 8px var(--accent-yellow);
+}
+
+/* メインコンテンツレイアウト */
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* 上段: 3連メーターパネル */
+.gauges-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .gauges-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gauge-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  min-height: 320px;
+  position: relative;
+  overflow: hidden;
+}
+
+.gauge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.gauge-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.8px;
+}
+
+.gauge-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--accent-red);
+  color: #ffffff;
+  animation: pulse-badge 1s infinite alternate;
+}
+
+@keyframes pulse-badge {
+  from { opacity: 0.7; }
+  to { opacity: 1; transform: scale(1.05); }
+}
+
+.gauge-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.gauge-footer {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.gauge-value-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.value-number {
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.value-number.error-text {
+  color: var(--accent-red);
+  animation: pulse-badge 0.8s infinite alternate;
+}
+
+.value-unit {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.value-sub {
+  font-size: 0.9rem;
+  color: var(--accent-cyan);
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+/* コンパス SVG */
+.compass-outer-ring {
+  fill: none;
+  stroke: var(--border-color);
+  stroke-width: 2;
+}
+
+.compass-inner-ring {
+  fill: rgba(11, 19, 41, 0.6);
+  stroke: var(--border-light);
+  stroke-width: 1;
+}
+
+.compass-label {
+  fill: var(--text-secondary);
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-weight: 700;
+}
+
+.compass-label.major-label {
+  font-size: 16px;
+  fill: #ffffff;
+}
+
+.compass-label.label-n {
+  fill: var(--accent-red);
+}
+
+.compass-label.minor-label {
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+
+.compass-deg-label {
+  font-size: 9px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  font-family: var(--font-mono);
+}
+
+/* スピードメーター SVG */
+.speed-arc-track {
+  fill: none;
+  stroke: #1e293b;
+  stroke-width: 18;
+  stroke-linecap: round;
+}
+
+.speed-arc-fill {
+  fill: none;
+  stroke-width: 18;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.speed-tick-text {
+  font-size: 11px;
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.speed-scale-indicator {
+  font-size: 11px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  font-family: var(--font-mono);
+}
+
+/* 温度計 レイアウト */
+.temp-body-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thermometer-container {
+  width: 160px;
+  height: 210px;
+}
+
+.temp-axis-text {
+  font-size: 10px;
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.temp-highlight-text {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.text-freeze {
+  fill: var(--accent-blue);
+}
+
+.text-room {
+  fill: var(--accent-green);
+}
+
+.temp-footer-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.temp-fahrenheit-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.temp-f-value {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* 中段: 時間軸グラフパネル */
+.chart-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.chart-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.control-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.btn-group {
+  display: inline-flex;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  border: 1px solid var(--border-color);
+}
+
+.btn-scale {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-scale:hover {
+  color: var(--text-primary);
+}
+
+.btn-scale.active {
+  background-color: #1e3a8a;
+  color: var(--accent-cyan);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.chart-canvas-wrapper {
+  width: 100%;
+  height: 420px;
+  position: relative;
+}
+
+#time-series-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 下段: 受信コンソール & CSV出力 */
+.bottom-section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.console-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.console-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.console-title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.console-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.8px;
+}
+
+.console-count-badge {
+  font-size: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.console-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auto-scroll-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.btn-clear-console {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-clear-console:hover {
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.console-table-header {
+  display: grid;
+  grid-template-columns: 180px 100px 90px 90px 70px 1fr;
+  padding: 6px 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.console-body {
+  height: 180px;
+  overflow-y: auto;
+  background-color: #070d1d;
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  padding: 4px 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.console-placeholder {
+  color: var(--text-muted);
+  padding: 20px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.console-row {
+  display: grid;
+  grid-template-columns: 180px 100px 90px 90px 70px 1fr;
+  padding: 3px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  align-items: center;
+  transition: background-color 0.1s ease;
+}
+
+.console-row:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.console-row.row-error {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.col-speed.val-error {
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.badge-ok {
+  color: var(--accent-green);
+  font-weight: 700;
+}
+
+.badge-err {
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.col-raw {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* フッターエリア */
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 20px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-top: auto;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-link {
+  color: var(--accent-blue);
+  text-decoration: none;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: var(--accent-cyan);
+  text-decoration: underline;
+}
+
+.footer-logo {
+  height: 24px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-csv {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+
+.btn-csv:hover {
+  filter: brightness(1.1);
+}
+
+/* スマホ対応 */
+@media (max-width: 680px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .chart-canvas-wrapper {
+    height: 360px;
+  }
+  .console-table-header, .console-row {
+    grid-template-columns: 120px 70px 60px 60px 50px 1fr;
+    font-size: 0.72rem;
+  }
+  .app-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

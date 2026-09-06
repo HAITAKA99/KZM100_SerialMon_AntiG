@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>かざみんリアルタイムモニター ver.0.1</title>
+  <meta name="description" content="超音波風向風速計 かざみん (KZM100A/KZM100LR) Web Serial API リアルタイム計測モニター">
+  <!-- ファビコン (SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%230b1329' stroke='%2300f0ff' stroke-width='6'/><polygon points='50,12 70,75 50,62 30,75' fill='%2300f0ff'/></svg>">
+  <link rel="stylesheet" href="./styles/main.css">
+  <script>
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+      console.error('[Kazamin Monitor] Unhandled Error:', msg, 'at', url + ':' + lineNo, error);
+      return false;
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('[Kazamin Monitor] Unhandled Promise Rejection:', event.reason);
+    });
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- ヘッダー -->
+    <header class="app-header">
+      <div class="header-brand">
+        <!-- かざみん ミニアイコン -->
+        <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="44" stroke="#00f0ff" stroke-width="6" fill="#131f3d"/>
+          <polygon points="50,14 74,78 50,65 26,78" fill="#00f0ff"/>
+        </svg>
+        <h1 class="header-title">
+          かざみんリアルタイムモニター
+          <span class="header-version">ver.0.1</span>
+        </h1>
+      </div>
+
+      <div class="header-controls">
+        <!-- 24H デジタル時計 -->
+        <div id="clock-container"></div>
+
+        <!-- シリアル接続・デモコントロール -->
+        <div class="serial-controls">
+          <div class="status-indicator">
+            <span id="status-dot" class="connection-status-dot"></span>
+            <span id="status-text" class="status-label">未接続</span>
+          </div>
+          <button type="button" id="btn-connect" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            かざみんに接続
+          </button>
+          <button type="button" id="btn-demo" class="btn btn-demo">デモモード</button>
+          <button type="button" id="btn-inject-error" class="btn btn-secondary" style="display: none;" title="テスト用: 3秒間 99.9m/s エラーパケットを発生させます">
+            ⚠ エラー注入
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="app-main">
+      <!-- 上段: 3連メーターパネル（風向・風速・気温） -->
+      <section class="gauges-section">
+        <!-- 風向メーター -->
+        <div id="gauge-dir-container"></div>
+        <!-- 風速メーター -->
+        <div id="gauge-speed-container"></div>
+        <!-- 気温計 -->
+        <div id="gauge-temp-container"></div>
+      </section>
+
+      <!-- 中段: 時間軸グラフパネル -->
+      <section class="chart-section" id="chart-container"></section>
+
+      <!-- 下段: 受信コンソールパネル -->
+      <section class="bottom-section">
+        <div id="console-container"></div>
+      </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <!-- かざみん公式ロゴ & リンク -->
+        <a href="https://kazamin.jp/" target="_blank" rel="noopener noreferrer" class="footer-link" title="超音波風向風速計 かざみん 公式ホームページ">
+          <svg class="footer-logo" viewBox="0 0 160 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" y="2" rx="6" fill="#131f3d" stroke="#00f0ff" stroke-width="2"/>
+            <!-- 風車・風向針シンボル -->
+            <polygon points="16,6 24,26 16,22 8,26" fill="#00f0ff"/>
+            <text x="40" y="24" fill="#ffffff" font-size="17" font-weight="bold" font-family="sans-serif">kazamin</text>
+            <text x="110" y="24" fill="#38bdf8" font-size="11" font-weight="600" font-family="sans-serif">.jp</text>
+          </svg>
+          <span>公式サイト (kazamin.jp)</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="footer-right">
+        <button type="button" id="btn-clear-db" class="btn btn-secondary" title="IndexedDBに保存された全計測履歴を消去">
+          データ初期化
+        </button>
+        <button type="button" id="btn-export-csv" class="btn btn-csv">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          CSVデータ出力 (最大7日間)
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- アプリケーションスクリプト -->
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

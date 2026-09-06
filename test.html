@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ユニットテスト - かざみんリアルタイムモニター</title>
+  <style>
+    body { font-family: monospace; background: #0f172a; color: #f8fafc; padding: 20px; }
+    .test-pass { color: #22c55e; }
+    .test-fail { color: #ef4444; font-weight: bold; }
+    .test-group { margin-bottom: 20px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+    h2 { color: #38bdf8; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>かざみんリアルタイムモニター ロジック検証テスト</h1>
+  <div id="test-results">テスト実行中...</div>
+
+  <script type="module">
+    import { parsePacket } from './src/serial/packet-parser.js';
+    import { calculateVectorMeanDirection, calculateAveragePoint, ChartAggregator, PLOT_COUNT } from './src/data/aggregator.js';
+    import { RingBuffer } from './src/data/ring-buffer.js';
+
+    const results = [];
+    function assert(desc, condition) {
+      results.push({ desc, pass: !!condition });
+    }
+
+    // --- 1. packet-parser テスト ---
+    console.log('--- 1. Packet Parser Tests ---');
+    const p1 = parsePacket('12.3[m/s],045,+23.5\r\n');
+    assert('正常パケットパース: 風速 12.3', p1 && p1.isValid && p1.speed === 12.3);
+    assert('正常パケットパース: 風向 45', p1 && p1.direction === 45);
+    assert('正常パケットパース: 気温 23.5', p1 && p1.temperature === 23.5);
+    assert('正常パケットパース: エラー判定 false', p1 && !p1.isError);
+
+    const pErr = parsePacket('99.9[m/s],180,+15.0');
+    assert('計測エラーパケット: エラー判定 true', pErr && pErr.isValid && pErr.isError);
+
+    const pMinus = parsePacket('05.2[m/s],270,-08.5');
+    assert('マイナス気温パケット: 気温 -8.5', pMinus && pMinus.isValid && pMinus.temperature === -8.5);
+
+    const pBad = parsePacket('invalid packet data');
+    assert('不正パケット拒絶: isValid false', pBad && !pBad.isValid);
+
+    // --- 2. aggregator (ベクトル平均 & 集約) テスト ---
+    console.log('--- 2. Vector Mean Tests ---');
+    const mean1 = calculateVectorMeanDirection([350, 10]);
+    assert('風向ベクトル平均: 350° と 10° の平均は 0°', mean1 === 0 || mean1 === 360);
+
+    const mean2 = calculateVectorMeanDirection([80, 100]);
+    assert('風向ベクトル平均: 80° と 100° の平均は 90°', mean2 === 90);
+
+    const mean3 = calculateVectorMeanDirection([0, 90, 180, 270]);
+    assert('全方位打ち消し時の動作 (フォールバック)', mean3 !== null);
+
+    // 平均ポイント計算（エラー値除外）
+    const packets = [
+      { isValid: true, speed: 10.0, direction: 80, temperature: 20.0, isError: false, timestamp: new Date() },
+      { isValid: true, speed: 99.9, direction: 180, temperature: 22.0, isError: true, timestamp: new Date() }, // エラー
+      { isValid: true, speed: 20.0, direction: 100, temperature: 24.0, isError: false, timestamp: new Date() }
+    ];
+    const avgPoint = calculateAveragePoint(packets);
+    assert('エラー除外平均: 風速算術平均は 15.0 (99.9除外)', avgPoint && avgPoint.speed === 15.0);
+    assert('エラー除外平均: 風向ベクトル平均は 90° (180°除外)', avgPoint && avgPoint.direction === 90);
+    assert('気温平均: 気温は全件算術平均で 22.0', avgPoint && avgPoint.temperature === 22.0);
+
+    // ChartAggregator 600点固定テスト
+    const agg = new ChartAggregator('10m');
+    agg.addPacket({ isValid: true, speed: 5.0, direction: 90, temperature: 20.0, isError: false, timestamp: new Date() });
+    const plotData = agg.getPlotData();
+    assert('プロットデータ長は 600点 固定', plotData.length === PLOT_COUNT);
+    assert('左端は未達のため null', plotData[0] === null);
+    assert('右端(index 599)は最新パケット', plotData[599] && plotData[599].speed === 5.0);
+
+    // --- 3. RingBuffer テスト ---
+    console.log('--- 3. RingBuffer Tests ---');
+    const rb = new RingBuffer(3);
+    rb.push(1);
+    rb.push(2);
+    rb.push(3);
+    rb.push(4); // 1が押し出される
+    assert('RingBuffer サイズは 3', rb.length === 3);
+    const arr = rb.toArray();
+    assert('RingBuffer 配列内容が [2, 3, 4]', arr[0] === 2 && arr[1] === 3 && arr[2] === 4);
+    assert('RingBuffer latest() は 4', rb.latest() === 4);
+
+    // 結果表示
+    const container = document.getElementById('test-results');
+    let passCount = 0;
+    let html = '';
+    for (const r of results) {
+      if (r.pass) passCount++;
+      html += `<div class="${r.pass ? 'test-pass' : 'test-fail'}">${r.pass ? '✔ PASS' : '✖ FAIL'}: ${r.desc}</div>`;
+    }
+    html = `<h3>結果: ${passCount} / ${results.length} PASSED</h3>` + html;
+    container.innerHTML = html;
+  </script>
+</body>
+</html>
