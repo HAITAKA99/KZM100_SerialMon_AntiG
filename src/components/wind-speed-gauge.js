@@ -31,23 +31,47 @@ export class WindSpeedGauge {
         <div class="gauge-body">
           <svg class="speed-svg" viewBox="0 0 300 240" width="100%" height="100%">
             <defs>
-              <!-- 速度バーのグラデーション -->
-              <linearGradient id="speedGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <!-- 速度バーの4セグメント固定グラデーション（円弧の接線方向に沿って固定） -->
+              <linearGradient id="speedGrad1" x1="55" y1="225" x2="55" y2="115" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#00f0ff" />
-                <stop offset="50%" stop-color="#22c55e" />
-                <stop offset="85%" stop-color="#eab308" />
+                <stop offset="100%" stop-color="#10b981" />
+              </linearGradient>
+              <linearGradient id="speedGrad2" x1="55" y1="115" x2="150" y2="60" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#10b981" />
+                <stop offset="100%" stop-color="#22c55e" />
+              </linearGradient>
+              <linearGradient id="speedGrad3" x1="150" y1="60" x2="245" y2="115" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#22c55e" />
+                <stop offset="100%" stop-color="#eab308" />
+              </linearGradient>
+              <linearGradient id="speedGrad4" x1="245" y1="115" x2="245" y2="225" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#eab308" />
                 <stop offset="100%" stop-color="#ef4444" />
               </linearGradient>
               <linearGradient id="speedErrorGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#ef4444" />
                 <stop offset="100%" stop-color="#991b1b" />
               </linearGradient>
+
+              <!-- マスク: 針先端までの円弧のみを表示 -->
+              <mask id="speedArcMask">
+                <path id="speed-mask-arc" class="speed-arc-mask" />
+              </mask>
             </defs>
 
             <!-- 背景アークトラック (開始 -210度, 終了 30度 = 240度の円弧) -->
             <path id="speed-track-bg" class="speed-arc-track" />
-            <!-- プログレスバー（実際の風速） -->
-            <path id="speed-track-fill" class="speed-arc-fill" />
+
+            <!-- プログレスバー（固定グラデーション + マスク制御） -->
+            <g id="speed-track-fill-group" mask="url(#speedArcMask)" style="opacity: 0; transition: opacity 0.2s ease;">
+              <path id="speed-seg-1" class="speed-arc-seg" stroke="url(#speedGrad1)" />
+              <path id="speed-seg-2" class="speed-arc-seg" stroke="url(#speedGrad2)" />
+              <path id="speed-seg-3" class="speed-arc-seg" stroke="url(#speedGrad3)" />
+              <path id="speed-seg-4" class="speed-arc-seg" stroke="url(#speedGrad4)" />
+            </g>
+
+            <!-- エラートラック（99.9m/s エラー時用） -->
+            <path id="speed-track-error" class="speed-arc-error" style="display: none;" />
 
             <!-- 目盛り線と数値ラベル -->
             <g id="speed-ticks"></g>
@@ -73,7 +97,13 @@ export class WindSpeedGauge {
     `;
 
     this.trackBg = this.container.querySelector('#speed-track-bg');
-    this.trackFill = this.container.querySelector('#speed-track-fill');
+    this.maskArc = this.container.querySelector('#speed-mask-arc');
+    this.fillGroup = this.container.querySelector('#speed-track-fill-group');
+    this.seg1 = this.container.querySelector('#speed-seg-1');
+    this.seg2 = this.container.querySelector('#speed-seg-2');
+    this.seg3 = this.container.querySelector('#speed-seg-3');
+    this.seg4 = this.container.querySelector('#speed-seg-4');
+    this.trackError = this.container.querySelector('#speed-track-error');
     this.ticksGroup = this.container.querySelector('#speed-ticks');
     this.needleGroup = this.container.querySelector('#speed-needle-group');
     this.scaleText = this.container.querySelector('#speed-scale-text');
@@ -104,8 +134,26 @@ export class WindSpeedGauge {
   }
 
   _setupArc() {
-    const d = this._describeArc(150, 170, 110, -210, 30);
-    this.trackBg.setAttribute('d', d);
+    const fullArc = this._describeArc(150, 170, 110, -210, 30);
+    this.trackBg.setAttribute('d', fullArc);
+
+    // 4セグメント（各60度）のパスを設定してグラデーションを全域固定
+    this.seg1.setAttribute('d', this._describeArc(150, 170, 110, -210, -150));
+    this.seg2.setAttribute('d', this._describeArc(150, 170, 110, -150, -90));
+    this.seg3.setAttribute('d', this._describeArc(150, 170, 110, -90, -30));
+    this.seg4.setAttribute('d', this._describeArc(150, 170, 110, -30, 30));
+
+    // マスク円弧の初期設定
+    this.maskArc.setAttribute('d', fullArc);
+    this.arcLength = (this.maskArc.getTotalLength && this.maskArc.getTotalLength()) || 460.77;
+    this.maskArc.style.strokeDasharray = `${this.arcLength} ${this.arcLength}`;
+    this.maskArc.style.strokeDashoffset = `${this.arcLength}`;
+
+    // エラートラック
+    if (this.trackError) {
+      this.trackError.setAttribute('d', fullArc);
+      this.trackError.setAttribute('stroke', 'url(#speedErrorGrad)');
+    }
   }
 
   /**
@@ -183,11 +231,11 @@ export class WindSpeedGauge {
         this.valText.textContent = '99.9';
         this.valText.classList.add('error-text');
       }
-      if (this.trackFill) {
-        // エラー時はフルスケール赤表示
-        const d = this._describeArc(150, 170, 110, -210, 30);
-        this.trackFill.setAttribute('d', d);
-        this.trackFill.setAttribute('stroke', 'url(#speedErrorGrad)');
+      if (this.fillGroup) {
+        this.fillGroup.style.opacity = '0';
+      }
+      if (this.trackError) {
+        this.trackError.style.display = 'block';
       }
       if (this.needleGroup) {
         this.needleGroup.style.transform = `rotate(30deg)`;
@@ -196,6 +244,8 @@ export class WindSpeedGauge {
     }
 
     if (this.errorBadge) this.errorBadge.style.display = 'none';
+    if (this.trackError) this.trackError.style.display = 'none';
+
     if (this.valText) {
       this.valText.textContent = this.currentSpeed.toFixed(1);
       this.valText.classList.remove('error-text');
@@ -206,13 +256,15 @@ export class WindSpeedGauge {
     const startAngle = -210;
     const currentAngle = startAngle + ratio * 240;
 
-    if (this.trackFill) {
+    // マスクによって針先端までのみ固定グラデーションを表示
+    if (this.maskArc && this.fillGroup) {
       if (ratio > 0.005) {
-        const d = this._describeArc(150, 170, 110, startAngle, currentAngle);
-        this.trackFill.setAttribute('d', d);
-        this.trackFill.setAttribute('stroke', 'url(#speedGrad)');
+        const offset = this.arcLength * (1 - ratio);
+        this.maskArc.style.strokeDashoffset = `${offset}`;
+        this.fillGroup.style.opacity = '1';
       } else {
-        this.trackFill.setAttribute('d', '');
+        this.maskArc.style.strokeDashoffset = `${this.arcLength}`;
+        this.fillGroup.style.opacity = '0';
       }
     }
 
