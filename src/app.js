@@ -32,7 +32,6 @@ class App {
     // DOM 要素
     this.btnConnect = document.getElementById('btn-connect');
     this.btnDemo = document.getElementById('btn-demo');
-    this.btnInjectError = document.getElementById('btn-inject-error');
     this.statusDot = document.getElementById('status-dot');
     this.statusText = document.getElementById('status-text');
     this.btnExportCsv = document.getElementById('btn-export-csv');
@@ -115,17 +114,6 @@ class App {
       }
     });
 
-    // デモ用エラー注入ボタン
-    if (this.btnInjectError) {
-      this.btnInjectError.addEventListener('click', () => {
-        if (this.serialManager.isDemoMode) {
-          this.serialManager.injectDemoError(3);
-        } else {
-          alert('エラー注入はデモモード中のみ有効です。');
-        }
-      });
-    }
-
     // CSVエクスポートボタン
     this.btnExportCsv.addEventListener('click', async () => {
       try {
@@ -202,7 +190,6 @@ class App {
       this.btnDemo.classList.add('active');
       this.btnDemo.textContent = 'デモ停止';
       this.btnConnect.disabled = true;
-      if (this.btnInjectError) this.btnInjectError.style.display = 'inline-flex';
     } else if (state.isConnected) {
       this.statusDot.className = 'connection-status-dot connected';
       this.statusText.textContent = 'シリアル接続中';
@@ -210,7 +197,6 @@ class App {
       this.btnConnect.classList.remove('btn-primary');
       this.btnConnect.classList.add('btn-danger');
       this.btnDemo.disabled = true;
-      if (this.btnInjectError) this.btnInjectError.style.display = 'none';
     } else {
       this.statusDot.className = 'connection-status-dot';
       this.statusText.textContent = '未接続';
@@ -221,7 +207,6 @@ class App {
       this.btnDemo.classList.remove('active');
       this.btnDemo.textContent = 'デモモード';
       this.btnDemo.disabled = false;
-      if (this.btnInjectError) this.btnInjectError.style.display = 'none';
     }
   }
 

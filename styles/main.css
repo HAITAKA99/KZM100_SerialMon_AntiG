@@ -228,12 +228,21 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+  align-items: stretch;
 }
 
 @media (max-width: 900px) {
   .gauges-section {
     grid-template-columns: 1fr;
   }
+}
+
+#gauge-dir-container,
+#gauge-speed-container,
+#gauge-temp-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .gauge-card {
@@ -245,7 +254,9 @@ body {
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  min-height: 320px;
+  height: 100%;
+  flex: 1;
+  min-height: 360px;
   position: relative;
   overflow: hidden;
 }
@@ -255,6 +266,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  min-height: 24px;
 }
 
 .gauge-title {
@@ -285,11 +297,18 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
+  min-height: 210px;
+  max-height: 220px;
 }
 
 .gauge-footer {
   margin-top: 10px;
   text-align: center;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .gauge-value-display {
@@ -326,6 +345,12 @@ body {
 }
 
 /* コンパス SVG */
+.compass-svg {
+  max-height: 205px;
+  width: auto;
+  max-width: 100%;
+}
+
 .compass-outer-ring {
   fill: none;
   stroke: var(--border-color);
@@ -367,6 +392,12 @@ body {
 }
 
 /* スピードメーター SVG */
+.speed-svg {
+  max-height: 205px;
+  width: auto;
+  max-width: 100%;
+}
+
 .speed-arc-track {
   fill: none;
   stroke: #1e293b;
@@ -402,8 +433,16 @@ body {
 }
 
 .thermometer-container {
-  width: 160px;
-  height: 210px;
+  width: 150px;
+  height: 205px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thermometer-svg {
+  max-height: 205px;
+  width: auto;
 }
 
 .temp-axis-text {

@@ -23,9 +23,7 @@ export class SerialManager {
     this.demoState = {
       speed: 4.5,
       direction: 45,
-      temperature: 22.5,
-      errorCountDown: 0,
-      isSimulatingError: false
+      temperature: 22.5
     };
   }
 
@@ -49,25 +47,35 @@ export class SerialManager {
       throw new Error('お使いのブラウザはWeb Serial APIに対応していません。Google ChromeまたはMicrosoft Edgeをご利用ください。');
     }
 
+    // 以前のポートが開いたまま残っていれば安全に切断・解放
+    if (this.port) {
+      try {
+        await this.disconnect();
+      } catch (e) {
+        console.warn('Pre-connect disconnect warning:', e);
+      }
+    }
+
     try {
       this._updateStatus('requesting');
       // ユーザーにシリアルポートを選択させる
       this.port = await navigator.serial.requestPort();
 
-      // ボーレート 9600bps でポートを開く
+      // ボーレート 9600bps でポートを開く（bufferSizeはドライバデフォルトに任せる）
       await this.port.open({
         baudRate: 9600,
         dataBits: 8,
         stopBits: 1,
-        parity: 'none',
-        bufferSize: 255
+        parity: 'none'
       });
 
       this.isConnected = true;
       this._updateStatus('connected');
 
-      // 受信ループ開始
-      this._readLoop();
+      // 受信ループ開始（非同期バックグラウンド実行）
+      this._readLoop().catch((err) => {
+        console.error('Unhandled read loop error:', err);
+      });
     } catch (err) {
       this.isConnected = false;
       this.port = null;
@@ -88,25 +96,38 @@ export class SerialManager {
       return;
     }
 
-    if (!this.isConnected && !this.port) return;
+    if (!this.isConnected && !this.port) {
+      this._updateStatus('disconnected');
+      return;
+    }
 
     this.isConnected = false;
 
     try {
       if (this.reader) {
-        await this.reader.cancel();
+        try {
+          await this.reader.cancel();
+        } catch (e) {
+          console.warn('Reader cancel warning:', e);
+        }
+        try {
+          this.reader.releaseLock();
+        } catch (e) {
+          console.warn('Reader releaseLock warning:', e);
+        }
+        this.reader = null;
       }
-      if (this.readableStreamClosed) {
-        await this.readableStreamClosed.catch(() => {});
-      }
+
       if (this.port) {
-        await this.port.close();
+        try {
+          await this.port.close();
+        } catch (e) {
+          console.warn('Port close warning:', e);
+        }
+        this.port = null;
       }
-    } catch (err) {
-      console.warn('Disconnect error:', err);
     } finally {
       this.reader = null;
-      this.readableStreamClosed = null;
       this.port = null;
       this._updateStatus('disconnected');
     }
@@ -114,44 +135,58 @@ export class SerialManager {
 
   /**
    * シリアルポートからの読み取りループ
+   * pipeTo によるストリームロックを避け、素の TextDecoder と getReader で読み取りを行う
    * @private
    */
   async _readLoop() {
-    const textDecoder = new TextDecoderStream();
-    this.readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
-    this.reader = textDecoder.readable.getReader();
-
+    const textDecoder = new TextDecoder();
     let buffer = '';
 
-    try {
-      while (this.isConnected) {
-        const { value, done } = await this.reader.read();
-        if (done) {
-          break;
-        }
-        if (value) {
-          buffer += value;
-          const lines = buffer.split(/\r?\n/);
-          // 最後の未完成の行を残す
-          buffer = lines.pop();
+    while (this.port && this.port.readable && this.isConnected) {
+      try {
+        this.reader = this.port.readable.getReader();
+      } catch (err) {
+        console.error('Failed to get readable stream reader:', err);
+        break;
+      }
 
-          for (const line of lines) {
-            if (line.trim()) {
-              this._handleRawLine(line);
+      try {
+        while (this.isConnected) {
+          const { value, done } = await this.reader.read();
+          if (done) {
+            // reader.cancel() が呼ばれた
+            break;
+          }
+          if (value) {
+            buffer += textDecoder.decode(value, { stream: true });
+            const lines = buffer.split(/\r?\n/);
+            // 最後の未完成の行を残す
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              if (line.trim()) {
+                this._handleRawLine(line);
+              }
             }
           }
         }
+      } catch (readErr) {
+        console.error('Serial read chunk error:', readErr);
+        // USBが抜かれた等の致命的エラーでなければ少し待機
+        if (!this.isConnected) break;
+      } finally {
+        if (this.reader) {
+          try {
+            this.reader.releaseLock();
+          } catch (e) {}
+          this.reader = null;
+        }
       }
-    } catch (err) {
-      if (this.isConnected) {
-        console.error('Serial read error:', err);
-        if (this.onError) this.onError(err);
-      }
-    } finally {
-      if (this.reader) {
-        this.reader.releaseLock();
-      }
-      this.disconnect();
+    }
+
+    // 意図せぬ切断の場合も後処理
+    if (this.isConnected) {
+      await this.disconnect();
     }
   }
 
@@ -197,14 +232,6 @@ export class SerialManager {
   }
 
   /**
-   * エラーパケット（99.9m/s）を強制的に注入する（テスト用）
-   */
-  injectDemoError(durationSeconds = 3) {
-    this.demoState.isSimulatingError = true;
-    this.demoState.errorCountDown = durationSeconds;
-  }
-
-  /**
    * デモパケットの生成
    * フォーマット: 00.0[m/s],000,+00.0
    * @private
@@ -216,20 +243,14 @@ export class SerialManager {
     let dirStr;
     let tempStr;
 
-    if (s.isSimulatingError && s.errorCountDown > 0) {
-      s.errorCountDown--;
-      if (s.errorCountDown <= 0) s.isSimulatingError = false;
-      speedStr = '99.9'; // エラー値固定
+    // 低確率(1/80)でランダムにエラー（99.9）をシミュレート
+    if (Math.random() < 0.0125) {
+      speedStr = '99.9';
     } else {
-      // たまに低確率(1/60)でランダムに1秒だけエラーを発生させる
-      if (Math.random() < 0.015) {
-        speedStr = '99.9';
-      } else {
-        // 風速のランダムウォーク: 0.5〜18.0 m/s 程度
-        const deltaSpeed = (Math.random() - 0.48) * 0.8;
-        s.speed = Math.max(0.2, Math.min(28.0, s.speed + deltaSpeed));
-        speedStr = s.speed.toFixed(1).padStart(4, '0');
-      }
+      // 風速のランダムウォーク: 0.5〜18.0 m/s 程度
+      const deltaSpeed = (Math.random() - 0.48) * 0.8;
+      s.speed = Math.max(0.2, Math.min(28.0, s.speed + deltaSpeed));
+      speedStr = s.speed.toFixed(1).padStart(4, '0');
     }
 
     // 風向のランダムウォーク: 0〜359度
