@@ -85,6 +85,10 @@ class App {
     if (urlParams.get('demo') === 'true' || urlParams.get('demo') === '1') {
       this.serialManager.startDemo();
     }
+    const testPacket = urlParams.get('packet');
+    if (testPacket) {
+      this.serialManager._handleRawLine(testPacket);
+    }
 
     console.log('かざみんリアルタイムモニター 準備完了');
   }

@@ -32,12 +32,12 @@ export class TemperatureGauge {
           <div class="thermometer-container">
             <svg class="thermometer-svg" viewBox="0 0 160 260" width="100%" height="100%">
               <defs>
-                <linearGradient id="tempGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stop-color="#0284c7" />   <!-- -20C 青 -->
-                  <stop offset="23.5%" stop-color="#38bdf8" /><!-- 0C 水色 -->
-                  <stop offset="53%" stop-color="#22c55e" />  <!-- 25C 緑 -->
-                  <stop offset="75%" stop-color="#eab308" />  <!-- 40C 黄 -->
-                  <stop offset="100%" stop-color="#ef4444" /> <!-- 65C 赤 -->
+                <linearGradient id="tempGrad" x1="0" y1="210" x2="0" y2="25" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#0284c7" />    <!-- -20C 青 -->
+                  <stop offset="23.5%" stop-color="#38bdf8" /> <!-- 0C 水色 -->
+                  <stop offset="52.9%" stop-color="#22c55e" /> <!-- 25C 緑 -->
+                  <stop offset="70.6%" stop-color="#eab308" /> <!-- 40C 黄 -->
+                  <stop offset="100%" stop-color="#ef4444" />  <!-- 65C 赤 -->
                 </linearGradient>
               </defs>
 
