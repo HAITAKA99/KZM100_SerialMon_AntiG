@@ -1,0 +1,3410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>かざみんリアルタイムモニター ver.0.1</title>
+  <meta name="description" content="超音波風向風速計 かざみん (KZM100A/KZM100LR) Web Serial API リアルタイム計測モニター">
+  <meta name="theme-color" content="#131f3d">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  <!-- ファビコン (SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%230b1329' stroke='%2300f0ff' stroke-width='6'/><polygon points='50,12 70,75 50,62 30,75' fill='%2300f0ff'/></svg>">
+  <style>
+/**
+ * main.css
+ * かざみんリアルタイムモニター (Web Serial Monitor) スタイルシート
+ */
+
+:root {
+  --bg-primary: #0b1329;
+  --bg-card: #131f3d;
+  --bg-card-hover: #19294f;
+  --bg-input: #1a294c;
+  --border-color: #243660;
+  --border-light: #334d85;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --accent-cyan: #00f0ff;
+  --accent-blue: #38bdf8;
+  --accent-green: #22c55e;
+  --accent-yellow: #eab308;
+  --accent-red: #ef4444;
+
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* アプリケーション全体コンテナ */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 12px 16px;
+  gap: 16px;
+}
+
+/* ヘッダーエリア */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-version {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  background-color: rgba(0, 240, 255, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* デジタル時計 */
+.digital-clock-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background-color: rgba(11, 19, 41, 0.8);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.clock-date {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.clock-time {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+}
+
+/* 接続ボタン & デモモード */
+.serial-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0284c7, #00f0ff);
+  color: #0b1329;
+  box-shadow: 0 2px 8px rgba(0, 240, 255, 0.3);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--accent-cyan);
+}
+
+.btn-demo {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--accent-yellow);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.btn-demo.active {
+  background: linear-gradient(135deg, #ca8a04, #eab308);
+  color: #0b1329;
+  font-weight: 700;
+}
+
+.connection-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.connection-status-dot.connected {
+  background-color: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+}
+
+.connection-status-dot.demo {
+  background-color: var(--accent-yellow);
+  box-shadow: 0 0 8px var(--accent-yellow);
+}
+
+/* メインコンテンツレイアウト */
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* 上段: 3連メーターパネル */
+.gauges-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .gauges-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+#gauge-dir-container,
+#gauge-speed-container,
+#gauge-temp-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gauge-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  height: 100%;
+  flex: 1;
+  min-height: 360px;
+  position: relative;
+  overflow: hidden;
+}
+
+.gauge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  min-height: 24px;
+}
+
+.gauge-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.8px;
+}
+
+.gauge-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--accent-red);
+  color: #ffffff;
+  animation: pulse-badge 1s infinite alternate;
+}
+
+@keyframes pulse-badge {
+  from { opacity: 0.7; }
+  to { opacity: 1; transform: scale(1.05); }
+}
+
+.gauge-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 210px;
+  max-height: 220px;
+}
+
+.gauge-footer {
+  margin-top: 10px;
+  text-align: center;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.gauge-value-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.value-number {
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.value-number.error-text {
+  color: var(--accent-red);
+  animation: pulse-badge 0.8s infinite alternate;
+}
+
+.value-unit {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.value-sub {
+  font-size: 0.9rem;
+  color: var(--accent-cyan);
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+/* コンパス SVG */
+.compass-svg {
+  max-height: 205px;
+  width: auto;
+  max-width: 100%;
+}
+
+.compass-outer-ring {
+  fill: none;
+  stroke: var(--border-color);
+  stroke-width: 2;
+}
+
+.compass-inner-ring {
+  fill: rgba(11, 19, 41, 0.6);
+  stroke: var(--border-light);
+  stroke-width: 1;
+}
+
+.compass-label {
+  fill: var(--text-secondary);
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-weight: 700;
+}
+
+.compass-label.major-label {
+  font-size: 16px;
+  fill: #ffffff;
+}
+
+.compass-label.label-n {
+  fill: var(--accent-red);
+}
+
+.compass-label.minor-label {
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+
+.compass-deg-label {
+  font-size: 9px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  font-family: var(--font-mono);
+}
+
+/* スピードメーター SVG */
+.speed-svg {
+  max-height: 205px;
+  width: auto;
+  max-width: 100%;
+}
+
+.speed-arc-track {
+  fill: none;
+  stroke: #1e293b;
+  stroke-width: 18;
+  stroke-linecap: round;
+}
+
+.speed-arc-fill {
+  fill: none;
+  stroke-width: 18;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.speed-tick-text {
+  font-size: 11px;
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.speed-scale-indicator {
+  font-size: 11px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  font-family: var(--font-mono);
+}
+
+/* 温度計 レイアウト */
+.temp-body-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thermometer-container {
+  width: 150px;
+  height: 205px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thermometer-svg {
+  max-height: 205px;
+  width: auto;
+}
+
+.temp-axis-text {
+  font-size: 10px;
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.temp-highlight-text {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.text-freeze {
+  fill: var(--accent-blue);
+}
+
+.text-room {
+  fill: var(--accent-green);
+}
+
+.temp-footer-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.temp-fahrenheit-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.temp-f-value {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* 中段: 時間軸グラフパネル */
+.chart-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.chart-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.control-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.btn-group {
+  display: inline-flex;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  border: 1px solid var(--border-color);
+}
+
+.btn-scale {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-scale:hover {
+  color: var(--text-primary);
+}
+
+.btn-scale.active {
+  background-color: #1e3a8a;
+  color: var(--accent-cyan);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.chart-canvas-wrapper {
+  width: 100%;
+  height: 420px;
+  position: relative;
+}
+
+#time-series-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 下段: 受信コンソール & CSV出力 */
+.bottom-section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.console-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.console-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.console-title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.console-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.8px;
+}
+
+.console-count-badge {
+  font-size: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.console-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auto-scroll-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.btn-clear-console {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-clear-console:hover {
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.console-table-header {
+  display: grid;
+  grid-template-columns: 180px 100px 90px 90px 70px 1fr;
+  padding: 6px 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.console-body {
+  height: 180px;
+  overflow-y: auto;
+  background-color: #070d1d;
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  padding: 4px 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.console-placeholder {
+  color: var(--text-muted);
+  padding: 20px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.console-row {
+  display: grid;
+  grid-template-columns: 180px 100px 90px 90px 70px 1fr;
+  padding: 3px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  align-items: center;
+  transition: background-color 0.1s ease;
+}
+
+.console-row:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.console-row.row-error {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.col-speed.val-error {
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.badge-ok {
+  color: var(--accent-green);
+  font-weight: 700;
+}
+
+.badge-err {
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.col-raw {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* フッターエリア */
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 20px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-top: auto;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-link {
+  color: var(--accent-blue);
+  text-decoration: none;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: var(--accent-cyan);
+  text-decoration: underline;
+}
+
+.footer-logo {
+  height: 24px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-csv {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+
+.btn-csv:hover {
+  filter: brightness(1.1);
+}
+
+/* スマホ対応 */
+@media (max-width: 680px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .chart-canvas-wrapper {
+    height: 360px;
+  }
+  .console-table-header, .console-row {
+    grid-template-columns: 120px 70px 60px 60px 50px 1fr;
+    font-size: 0.72rem;
+  }
+  .app-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+  </style>
+  <script>
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+      console.error('[Kazamin Monitor] Unhandled Error:', msg, 'at', url + ':' + lineNo, error);
+      return false;
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('[Kazamin Monitor] Unhandled Promise Rejection:', event.reason);
+    });
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- ヘッダー -->
+    <header class="app-header">
+      <div class="header-brand">
+        <!-- かざみん ミニアイコン -->
+        <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="44" stroke="#00f0ff" stroke-width="6" fill="#131f3d"/>
+          <polygon points="50,14 74,78 50,65 26,78" fill="#00f0ff"/>
+        </svg>
+        <h1 class="header-title">
+          かざみんリアルタイムモニター
+          <span class="header-version">ver.0.1</span>
+        </h1>
+      </div>
+
+      <div class="header-controls">
+        <!-- 24H デジタル時計 -->
+        <div id="clock-container"></div>
+
+        <!-- シリアル接続・デモコントロール -->
+        <div class="serial-controls">
+          <div class="status-indicator">
+            <span id="status-dot" class="connection-status-dot"></span>
+            <span id="status-text" class="status-label">未接続</span>
+          </div>
+          <button type="button" id="btn-connect" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            かざみんに接続
+          </button>
+          <button type="button" id="btn-demo" class="btn btn-demo">デモモード</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="app-main">
+      <!-- 上段: 3連メーターパネル（風向・風速・気温） -->
+      <section class="gauges-section">
+        <!-- 風向メーター -->
+        <div id="gauge-dir-container"></div>
+        <!-- 風速メーター -->
+        <div id="gauge-speed-container"></div>
+        <!-- 気温計 -->
+        <div id="gauge-temp-container"></div>
+      </section>
+
+      <!-- 中段: 時間軸グラフパネル -->
+      <section class="chart-section" id="chart-container"></section>
+
+      <!-- 下段: 受信コンソールパネル -->
+      <section class="bottom-section">
+        <div id="console-container"></div>
+      </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <!-- かざみん公式ロゴ & リンク -->
+        <a href="https://kazamin.jp/" target="_blank" rel="noopener noreferrer" class="footer-link" title="超音波風向風速計 かざみん 公式ホームページ">
+          <svg class="footer-logo" viewBox="0 0 160 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" y="2" rx="6" fill="#131f3d" stroke="#00f0ff" stroke-width="2"/>
+            <!-- 風車・風向針シンボル -->
+            <polygon points="16,6 24,26 16,22 8,26" fill="#00f0ff"/>
+            <text x="40" y="24" fill="#ffffff" font-size="17" font-weight="bold" font-family="sans-serif">kazamin</text>
+            <text x="110" y="24" fill="#38bdf8" font-size="11" font-weight="600" font-family="sans-serif">.jp</text>
+          </svg>
+          <span>公式サイト (kazamin.jp)</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="footer-right">
+        <button type="button" id="btn-clear-db" class="btn btn-secondary" title="IndexedDBに保存された全計測履歴を消去">
+          データ初期化
+        </button>
+        <button type="button" id="btn-export-csv" class="btn btn-csv">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          CSVデータ出力 (最大7日間)
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+
+// PWA Service Worker 登録 (HTTP/HTTPS 環境のみ)
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => console.log('[PWA] Service Worker registered with scope:', reg.scope))
+      .catch((err) => console.warn('[PWA] Service Worker registration failed:', err));
+  });
+}
+
+(() => {
+// --- Begin src\serial\packet-parser.js ---
+/**
+ * packet-parser.js
+ * かざみん(KZM100A/KZM100LR)のシリアル通信パケット解析モジュール
+ *
+ * 受信仕様:
+ * - ボーレート: 9600bps
+ * - フォーマット: 00.0[m/s],000,+00.0[CR/LF]
+ *   - 風速: 00.0 ～ 99.9 [m/s] (99.9は計測エラー)
+ *   - 風向: 000 ～ 359 [度]
+ *   - 気温: -20.0 ～ +65.0 [℃]
+ */
+
+// パケットの正規表現: 固定桁数を基本としつつ、前後の空白や桁数のわずかな差異にも柔軟に対応
+// 例: "12.3[m/s],045,+23.5\r\n" や "00.0[m/s],000,-05.2"
+const PACKET_REGEX = /^\s*(\d{1,2}\.\d)\[m\/s\],\s*(\d{1,3}),\s*([+-]?\d{1,2}\.\d)\s*$/;
+
+/**
+ * 1行のテキストをパースして構造化データを返す
+ * @param {string} line - 受信した1行文字列
+ * @param {Date} [timestamp=new Date()] - 受信日時
+ * @returns {object|null} パース結果。不正パケットの場合はnull
+ */
+function parsePacket(line, timestamp = new Date()) {
+  if (typeof line !== 'string') return null;
+
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+
+  const match = trimmed.match(PACKET_REGEX);
+  if (!match) {
+    return {
+      isValid: false,
+      raw: trimmed,
+      timestamp,
+      errorReason: 'FORMAT_MISMATCH'
+    };
+  }
+
+  const speedStr = match[1];
+  const dirStr = match[2];
+  const tempStr = match[3];
+
+  const speed = parseFloat(speedStr);
+  const direction = parseInt(dirStr, 10);
+  const temperature = parseFloat(tempStr);
+
+  // 風速 99.9 [m/s] は計測エラー
+  const isError = Math.abs(speed - 99.9) < 0.05;
+
+  // 範囲チェック
+  // 風速: 0.0 〜 99.9
+  // 風向: 0 〜 359
+  // 気温: -20.0 〜 +65.0
+  const isDirValid = direction >= 0 && direction <= 359;
+  const isTempValid = temperature >= -20.0 && temperature <= 65.0;
+  const isSpeedValid = speed >= 0.0 && speed <= 99.9;
+
+  if (!isDirValid || !isTempValid || !isSpeedValid) {
+    return {
+      isValid: false,
+      raw: trimmed,
+      timestamp,
+      errorReason: 'OUT_OF_RANGE'
+    };
+  }
+
+  return {
+    isValid: true,
+    raw: trimmed,
+    timestamp,
+    speed,
+    speedStr,
+    direction,
+    dirStr,
+    temperature,
+    tempStr,
+    isError
+  };
+}
+// --- End src\serial\packet-parser.js ---
+
+// --- Begin src\data\ring-buffer.js ---
+/**
+ * ring-buffer.js
+ * メモリ割り当てを抑え長期連続稼働に適した固定長リングバッファ
+ */
+
+class RingBuffer {
+  /**
+   * @param {number} capacity - バッファの最大容量
+   */
+  constructor(capacity = 600) {
+    this.capacity = capacity;
+    this.buffer = new Array(capacity);
+    this.head = 0; // 次に書き込むインデックス
+    this.size = 0; // 現在格納されている要素数
+  }
+
+  /**
+   * 要素を末尾に追加
+   * @param {*} item
+   */
+  push(item) {
+    this.buffer[this.head] = item;
+    this.head = (this.head + 1) % this.capacity;
+    if (this.size < this.capacity) {
+      this.size++;
+    }
+  }
+
+  /**
+   * 現在の要素数を返す
+   * @returns {number}
+   */
+  get length() {
+    return this.size;
+  }
+
+  /**
+   * 最も古い要素から最新の要素までの配列を生成して返す
+   * （最新の要素が末尾）
+   * @returns {Array}
+   */
+  toArray() {
+    const result = new Array(this.size);
+    if (this.size < this.capacity) {
+      for (let i = 0; i < this.size; i++) {
+        result[i] = this.buffer[i];
+      }
+    } else {
+      // head は最も古い要素を指している
+      for (let i = 0; i < this.size; i++) {
+        const index = (this.head + i) % this.capacity;
+        result[i] = this.buffer[index];
+      }
+    }
+    return result;
+  }
+
+  /**
+   * 最新の要素を取得
+   * @returns {*}
+   */
+  latest() {
+    if (this.size === 0) return null;
+    const index = (this.head - 1 + this.capacity) % this.capacity;
+    return this.buffer[index];
+  }
+
+  /**
+   * バッファをクリア
+   */
+  clear() {
+    this.head = 0;
+    this.size = 0;
+    this.buffer.fill(undefined);
+  }
+}
+// --- End src\data\ring-buffer.js ---
+
+// --- Begin src\data\aggregator.js ---
+/**
+ * aggregator.js
+ * 時間軸グラフ用のデータ集約・ダウンサンプリングエンジン
+ *
+ * グラフ仕様:
+ * - プロット点数は 600点 固定
+ * - スケール:
+ *   - 10m: 10分 (600秒) -> 1秒間隔 (Δt = 1)
+ *   - 1h:  1時間 (3600秒) -> 6秒間隔 (Δt = 6)
+ *   - 6h:  6時間 (21600秒) -> 36秒間隔 (Δt = 36)
+ *   - 24h: 24時間 (86400秒) -> 144秒間隔 (Δt = 144)
+ *   - 7d:  7日間 (604800秒) -> 1008秒間隔 (Δt = 1008)
+ * - 600点に満たない左側の未到達部分は null
+ * - 右端（インデックス599）は常に1秒ごとの最新データ
+ * - Δt秒ごとにスクロールし、直近Δt秒間の平均値がインデックス598へ確定される
+ * - 平均化ルール:
+ *   - 風速・気温: 算術平均（計測エラー時は風速・風向を除外）
+ *   - 風向: ベクトル平均（atan2(sum(sin), sum(cos))）
+ */
+
+const TIME_SCALES = {
+  '10m': { label: '10分間', durationSec: 600, intervalSec: 1 },
+  '1h':  { label: '1時間',  durationSec: 3600, intervalSec: 6 },
+  '6h':  { label: '6時間',  durationSec: 21600, intervalSec: 36 },
+  '24h': { label: '24時間', durationSec: 86400, intervalSec: 144 },
+  '7d':  { label: '7日間',  durationSec: 604800, intervalSec: 1008 }
+};
+
+const PLOT_COUNT = 600;
+
+/**
+ * 角度配列のベクトル平均を計算する
+ * @param {number[]} angles - 有効な角度(0-359)の配列
+ * @returns {number|null} 0〜359の平均角度。データが空の場合はnull
+ */
+function calculateVectorMeanDirection(angles) {
+  if (!angles || angles.length === 0) return null;
+
+  let sumSin = 0;
+  let sumCos = 0;
+
+  for (const deg of angles) {
+    const rad = (deg * Math.PI) / 180;
+    sumSin += Math.sin(rad);
+    sumCos += Math.cos(rad);
+  }
+
+  // ベクトルの長さがほぼ0の場合は直前の値またはnull
+  if (Math.abs(sumSin) < 1e-7 && Math.abs(sumCos) < 1e-7) {
+    return angles[0];
+  }
+
+  let meanRad = Math.atan2(sumSin, sumCos);
+  let meanDeg = (meanRad * 180) / Math.PI;
+  if (meanDeg < 0) meanDeg += 360;
+
+  return Math.round(meanDeg) % 360;
+}
+
+/**
+ * パケットの配列から平均プロット点({ speed, direction, temperature, isError, timestamp })を計算
+ * @param {Array} packets
+ * @returns {object|null}
+ */
+function calculateAveragePoint(packets) {
+  if (!packets || packets.length === 0) return null;
+
+  const validSpeeds = [];
+  const validDirs = [];
+  const temps = [];
+
+  let lastTimestamp = packets[packets.length - 1].timestamp;
+
+  for (const p of packets) {
+    if (!p.isValid) continue;
+
+    temps.push(p.temperature);
+
+    if (!p.isError) {
+      validSpeeds.push(p.speed);
+      validDirs.push(p.direction);
+    }
+  }
+
+  if (temps.length === 0) return null;
+
+  // 気温の算術平均
+  const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length;
+
+  // 風速の算術平均（全件エラーの場合は null または 99.9）
+  let avgSpeed = null;
+  let avgDir = null;
+  let isError = false;
+
+  if (validSpeeds.length > 0) {
+    avgSpeed = validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length;
+    avgDir = calculateVectorMeanDirection(validDirs);
+  } else {
+    isError = true;
+    avgSpeed = 99.9;
+    avgDir = null;
+  }
+
+  return {
+    timestamp: lastTimestamp,
+    speed: avgSpeed !== null ? parseFloat(avgSpeed.toFixed(1)) : null,
+    direction: avgDir,
+    temperature: parseFloat(avgTemp.toFixed(1)),
+    isError
+  };
+}
+
+class ChartAggregator {
+  constructor(timeScaleKey = '10m') {
+    this.timeScaleKey = timeScaleKey;
+    this.config = TIME_SCALES[timeScaleKey] || TIME_SCALES['10m'];
+
+    // 確定済みプロット配列 (最大599点)
+    // 左端が古いデータ、右側が最新確定データ
+    this.committedPoints = [];
+
+    // 現在のインターバル期間内に受信した一時パケット群
+    this.currentIntervalPackets = [];
+
+    // 最新の未平均化リアルタイム生パケット（右端用）
+    this.latestPacket = null;
+  }
+
+  /**
+   * 時間スケールを変更
+   * @param {string} newScaleKey ('10m', '1h', '6h', '24h', '7d')
+   * @param {Array} historyPackets - スケール再構築用の過去全パケット配列（あれば）
+   */
+  setScale(newScaleKey, historyPackets = []) {
+    if (!TIME_SCALES[newScaleKey]) return;
+    this.timeScaleKey = newScaleKey;
+    this.config = TIME_SCALES[newScaleKey];
+
+    // 過去履歴パケットから再構築
+    this.rebuildFromHistory(historyPackets);
+  }
+
+  /**
+   * 1秒ごとに新しいパケットを追加
+   * @param {object} packet - parsePacket の結果
+   */
+  addPacket(packet) {
+    if (!packet || !packet.isValid) return;
+
+    this.latestPacket = packet;
+    this.currentIntervalPackets.push(packet);
+
+    // インターバル秒数（Δt）に達したら平均を計算して確定点とする
+    if (this.currentIntervalPackets.length >= this.config.intervalSec) {
+      const avgPoint = calculateAveragePoint(this.currentIntervalPackets);
+      if (avgPoint) {
+        this.committedPoints.push(avgPoint);
+        // 確定点は最大 599点 (インデックス 0〜598) に保つ
+        if (this.committedPoints.length >= PLOT_COUNT) {
+          this.committedPoints.shift();
+        }
+      }
+      this.currentIntervalPackets = [];
+    }
+  }
+
+  /**
+   * グラフ描画用の 600点 固定配列を取得する
+   * - インデックス 0〜598: 過去の確定平均データ（足りない左側は null）
+   * - インデックス 599: 最新の1秒生パケット
+   * @returns {Array<object|null>} 長さ600の配列
+   */
+  getPlotData() {
+    const result = new Array(PLOT_COUNT).fill(null);
+
+    // 最新パケット（右端 インデックス 599）
+    if (this.latestPacket) {
+      result[PLOT_COUNT - 1] = {
+        timestamp: this.latestPacket.timestamp,
+        speed: this.latestPacket.speed,
+        direction: this.latestPacket.direction,
+        temperature: this.latestPacket.temperature,
+        isError: this.latestPacket.isError
+      };
+    }
+
+    // 確定済みポイントをインデックス 598 から左へ逆順に埋める
+    const count = Math.min(this.committedPoints.length, PLOT_COUNT - 1);
+    for (let i = 0; i < count; i++) {
+      const pointIndex = PLOT_COUNT - 2 - i;
+      const dataIndex = this.committedPoints.length - 1 - i;
+      result[pointIndex] = this.committedPoints[dataIndex];
+    }
+
+    return result;
+  }
+
+  /**
+   * 過去ログから確定ポイントを再集計・再構築する（スケール変更時など）
+   * @param {Array} packets - 時系列順の生パケット配列
+   */
+  rebuildFromHistory(packets) {
+    this.committedPoints = [];
+    this.currentIntervalPackets = [];
+    this.latestPacket = null;
+
+    if (!packets || packets.length === 0) return;
+
+    const intervalSec = this.config.intervalSec;
+
+    if (intervalSec === 1) {
+      // 10分スケール: 直近600秒のパケットをそのまま確定点にする
+      const startIdx = Math.max(0, packets.length - (PLOT_COUNT - 1));
+      for (let i = startIdx; i < packets.length - 1; i++) {
+        const p = packets[i];
+        if (p.isValid) {
+          this.committedPoints.push({
+            timestamp: p.timestamp,
+            speed: p.speed,
+            direction: p.direction,
+            temperature: p.temperature,
+            isError: p.isError
+          });
+        }
+      }
+      this.latestPacket = packets[packets.length - 1];
+      return;
+    }
+
+    // Δt > 1 の場合: パケットを Δt 秒ごとにチャンク分けして平均計算
+    let chunk = [];
+    for (let i = 0; i < packets.length; i++) {
+      const p = packets[i];
+      if (!p.isValid) continue;
+
+      chunk.push(p);
+      if (chunk.length >= intervalSec) {
+        const avg = calculateAveragePoint(chunk);
+        if (avg) {
+          this.committedPoints.push(avg);
+          if (this.committedPoints.length >= PLOT_COUNT) {
+            this.committedPoints.shift();
+          }
+        }
+        chunk = [];
+      }
+    }
+
+    this.currentIntervalPackets = chunk;
+    this.latestPacket = packets[packets.length - 1];
+  }
+}
+// --- End src\data\aggregator.js ---
+
+// --- Begin src\storage\db.js ---
+/**
+ * db.js
+ * IndexedDB を利用した測定データのローカル永続化（最大7日間保持 & 自動パージ）
+ */
+
+const DB_NAME = 'KazaminMonitorDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'measurements';
+
+class StorageManager {
+  constructor() {
+    this.db = null;
+    this.initPromise = null;
+  }
+
+  /**
+   * IndexedDBの初期化・オープン
+   * @returns {Promise<IDBDatabase>}
+   */
+  async init() {
+    if (this.db) return this.db;
+    if (this.initPromise) return this.initPromise;
+
+    this.initPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          const store = db.createObjectStore(STORE_NAME, {
+            keyPath: 'id',
+            autoIncrement: true
+          });
+          store.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+      };
+
+      request.onsuccess = (event) => {
+        this.db = event.target.result;
+        resolve(this.db);
+      };
+
+      request.onerror = (event) => {
+        console.error('IndexedDB open error:', event.target.error);
+        reject(event.target.error);
+      };
+    });
+
+    return this.initPromise;
+  }
+
+  /**
+   * 計測パケットを1件保存
+   * @param {object} packet - parsePacket の結果
+   */
+  async savePacket(packet) {
+    if (!packet || !packet.isValid) return;
+
+    try {
+      const db = await this.init();
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+
+      const record = {
+        timestamp: packet.timestamp instanceof Date ? packet.timestamp.getTime() : packet.timestamp,
+        speed: packet.speed,
+        direction: packet.direction,
+        temperature: packet.temperature,
+        isError: packet.isError,
+        raw: packet.raw
+      };
+
+      store.add(record);
+    } catch (err) {
+      console.warn('Failed to save packet to IndexedDB:', err);
+    }
+  }
+
+  /**
+   * 指定した開始時刻以降のデータを取得
+   * @param {number|Date} startTime
+   * @returns {Promise<Array>}
+   */
+  async getSince(startTime) {
+    const startMs = startTime instanceof Date ? startTime.getTime() : startTime;
+    const db = await this.init();
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const index = store.index('timestamp');
+      const range = IDBKeyRange.lowerBound(startMs);
+      const request = index.getAll(range);
+
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 保存されている全レコードを取得
+   * @returns {Promise<Array>}
+   */
+  async getAll() {
+    const db = await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.getAll();
+
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 7日以上前の古いレコードを自動削除（パージ）
+   * @param {number} [retentionDays=7] - 保持日数
+   */
+  async purgeOldData(retentionDays = 7) {
+    try {
+      const db = await this.init();
+      const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const index = store.index('timestamp');
+      const range = IDBKeyRange.upperBound(cutoffTime);
+
+      const request = index.openCursor(range);
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+        }
+      };
+    } catch (err) {
+      console.warn('Failed to purge old data:', err);
+    }
+  }
+
+  /**
+   * 全データを削除（クリア）
+   */
+  async clear() {
+    const db = await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.clear();
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+}
+// --- End src\storage\db.js ---
+
+// --- Begin src\export\csv-exporter.js ---
+/**
+ * csv-exporter.js
+ * 保持データ（最大7日間）をCSV形式でファイルダウンロードするモジュール
+ */
+
+/**
+ * 日付オブジェクトを YYYY-MM-DD HH:mm:ss 形式にフォーマット
+ * @param {Date|number} timestamp
+ * @returns {string}
+ */
+function formatTimestamp(timestamp) {
+  const d = timestamp instanceof Date ? timestamp : new Date(timestamp);
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const min = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+
+  return `${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}`;
+}
+
+/**
+ * データ配列からCSV文字列を生成してブラウザダウンロードを実行する
+ * @param {Array<object>} records - 測定レコードの配列
+ * @param {string} [filenamePrefix='kazamin_log']
+ */
+function exportToCsv(records, filenamePrefix = 'kazamin_log') {
+  if (!records || records.length === 0) {
+    alert('出力対象の受信データがありません。');
+    return;
+  }
+
+  // BOM付き UTF-8 でExcelでも文字化けしないようにする
+  const BOM = '\uFEFF';
+  const headers = ['日時 (Timestamp)', '風速 (Wind Speed [m/s])', '風向 (Wind Direction [deg])', '気温 (Temperature [℃])', 'ステータス (Status)', '生パケット (Raw Data)'];
+  
+  const rows = [headers.join(',')];
+
+  for (const r of records) {
+    const timeStr = `"${formatTimestamp(r.timestamp)}"`;
+    const speedStr = r.speed !== null && r.speed !== undefined ? r.speed.toFixed(1) : '';
+    const dirStr = r.direction !== null && r.direction !== undefined ? r.direction : '';
+    const tempStr = r.temperature !== null && r.temperature !== undefined ? (r.temperature >= 0 ? `+${r.temperature.toFixed(1)}` : r.temperature.toFixed(1)) : '';
+    const statusStr = r.isError ? '"ERROR (99.9m/s)"' : '"OK"';
+    const rawStr = r.raw ? `"${r.raw.replace(/"/g, '""')}"` : '';
+
+    rows.push([timeStr, speedStr, dirStr, tempStr, statusStr, rawStr].join(','));
+  }
+
+  const csvContent = BOM + rows.join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  // ファイル名生成: kazamin_log_YYYYMMDD_HHMMSS.csv
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const fileDate = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  const filename = `${filenamePrefix}_${fileDate}.csv`;
+
+  // ダウンロードリンク作成
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+// --- End src\export\csv-exporter.js ---
+
+// --- Begin src\serial\serial-manager.js ---
+/**
+ * serial-manager.js
+ * Web Serial API の接続・データ受信管理、およびデモモード（シミュレータ）
+ */
+
+class SerialManager {
+  constructor() {
+    this.port = null;
+    this.reader = null;
+    this.readableStreamClosed = null;
+    this.isConnected = false;
+    this.isDemoMode = false;
+    this.demoTimer = null;
+
+    // コールバック
+    this.onPacketReceived = null;
+    this.onStatusChange = null;
+    this.onError = null;
+
+    // デモ用内部状態
+    this.demoState = {
+      speed: 4.5,
+      direction: 45,
+      temperature: 22.5
+    };
+  }
+
+  /**
+   * ブラウザがWeb Serial APIをサポートしているか
+   * @returns {boolean}
+   */
+  static isSupported() {
+    return 'serial' in navigator;
+  }
+
+  /**
+   * シリアルポートを選択して接続する
+   */
+  async connect() {
+    if (this.isDemoMode) {
+      this.stopDemo();
+    }
+
+    if (!SerialManager.isSupported()) {
+      throw new Error('お使いのブラウザはWeb Serial APIに対応していません。Google ChromeまたはMicrosoft Edgeをご利用ください。');
+    }
+
+    // 以前のポートが開いたまま残っていれば安全に切断・解放
+    if (this.port) {
+      try {
+        await this.disconnect();
+      } catch (e) {
+        console.warn('Pre-connect disconnect warning:', e);
+      }
+    }
+
+    try {
+      this._updateStatus('requesting');
+      // ユーザーにシリアルポートを選択させる
+      this.port = await navigator.serial.requestPort();
+
+      // ボーレート 9600bps でポートを開く（bufferSizeはドライバデフォルトに任せる）
+      await this.port.open({
+        baudRate: 9600,
+        dataBits: 8,
+        stopBits: 1,
+        parity: 'none'
+      });
+
+      this.isConnected = true;
+      this._updateStatus('connected');
+
+      // 受信ループ開始（非同期バックグラウンド実行）
+      this._readLoop().catch((err) => {
+        console.error('Unhandled read loop error:', err);
+      });
+    } catch (err) {
+      this.isConnected = false;
+      this.port = null;
+      this._updateStatus('disconnected');
+      if (err.name !== 'NotFoundError') { // ユーザーキャンセル以外のエラー
+        if (this.onError) this.onError(err);
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * シリアル接続を切断する
+   */
+  async disconnect() {
+    if (this.isDemoMode) {
+      this.stopDemo();
+      return;
+    }
+
+    if (!this.isConnected && !this.port) {
+      this._updateStatus('disconnected');
+      return;
+    }
+
+    this.isConnected = false;
+
+    try {
+      if (this.reader) {
+        try {
+          await this.reader.cancel();
+        } catch (e) {
+          console.warn('Reader cancel warning:', e);
+        }
+        try {
+          this.reader.releaseLock();
+        } catch (e) {
+          console.warn('Reader releaseLock warning:', e);
+        }
+        this.reader = null;
+      }
+
+      if (this.port) {
+        try {
+          await this.port.close();
+        } catch (e) {
+          console.warn('Port close warning:', e);
+        }
+        this.port = null;
+      }
+    } finally {
+      this.reader = null;
+      this.port = null;
+      this._updateStatus('disconnected');
+    }
+  }
+
+  /**
+   * シリアルポートからの読み取りループ
+   * pipeTo によるストリームロックを避け、素の TextDecoder と getReader で読み取りを行う
+   * @private
+   */
+  async _readLoop() {
+    const textDecoder = new TextDecoder();
+    let buffer = '';
+
+    while (this.port && this.port.readable && this.isConnected) {
+      try {
+        this.reader = this.port.readable.getReader();
+      } catch (err) {
+        console.error('Failed to get readable stream reader:', err);
+        break;
+      }
+
+      try {
+        while (this.isConnected) {
+          const { value, done } = await this.reader.read();
+          if (done) {
+            // reader.cancel() が呼ばれた
+            break;
+          }
+          if (value) {
+            buffer += textDecoder.decode(value, { stream: true });
+            const lines = buffer.split(/\r?\n/);
+            // 最後の未完成の行を残す
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              if (line.trim()) {
+                this._handleRawLine(line);
+              }
+            }
+          }
+        }
+      } catch (readErr) {
+        console.error('Serial read chunk error:', readErr);
+        // USBが抜かれた等の致命的エラーでなければ少し待機
+        if (!this.isConnected) break;
+      } finally {
+        if (this.reader) {
+          try {
+            this.reader.releaseLock();
+          } catch (e) {}
+          this.reader = null;
+        }
+      }
+    }
+
+    // 意図せぬ切断の場合も後処理
+    if (this.isConnected) {
+      await this.disconnect();
+    }
+  }
+
+  /**
+   * 1行の受信文字列を処理
+   * @private
+   */
+  _handleRawLine(line) {
+    const packet = parsePacket(line);
+    if (packet && this.onPacketReceived) {
+      this.onPacketReceived(packet);
+    }
+  }
+
+  /**
+   * デモモード（シミュレータ）の開始
+   */
+  startDemo() {
+    if (this.isConnected) {
+      this.disconnect();
+    }
+    this.isDemoMode = true;
+    this._updateStatus('demo');
+
+    // 1秒間隔でパケットを生成
+    this.demoTimer = setInterval(() => {
+      this._generateDemoPacket();
+    }, 1000);
+    // 即時1回目を発行
+    this._generateDemoPacket();
+  }
+
+  /**
+   * デモモードの停止
+   */
+  stopDemo() {
+    if (this.demoTimer) {
+      clearInterval(this.demoTimer);
+      this.demoTimer = null;
+    }
+    this.isDemoMode = false;
+    this._updateStatus('disconnected');
+  }
+
+  /**
+   * デモパケットの生成
+   * フォーマット: 00.0[m/s],000,+00.0
+   * @private
+   */
+  _generateDemoPacket() {
+    const s = this.demoState;
+
+    let speedStr;
+    let dirStr;
+    let tempStr;
+
+    // 低確率(1/80)でランダムにエラー（99.9）をシミュレート
+    if (Math.random() < 0.0125) {
+      speedStr = '99.9';
+    } else {
+      // 風速のランダムウォーク: 0.5〜18.0 m/s 程度
+      const deltaSpeed = (Math.random() - 0.48) * 0.8;
+      s.speed = Math.max(0.2, Math.min(28.0, s.speed + deltaSpeed));
+      speedStr = s.speed.toFixed(1).padStart(4, '0');
+    }
+
+    // 風向のランダムウォーク: 0〜359度
+    const deltaDir = (Math.random() - 0.5) * 12;
+    s.direction = (s.direction + deltaDir + 360) % 360;
+    dirStr = Math.round(s.direction).toString().padStart(3, '0');
+
+    // 気温のゆるやかな変動: 18.0〜28.0℃
+    const deltaTemp = (Math.random() - 0.5) * 0.1;
+    s.temperature = Math.max(10.0, Math.min(35.0, s.temperature + deltaTemp));
+    const sign = s.temperature >= 0 ? '+' : '-';
+    tempStr = sign + Math.abs(s.temperature).toFixed(1).padStart(4, '0');
+
+    const line = `${speedStr}[m/s],${dirStr},${tempStr}`;
+    this._handleRawLine(line);
+  }
+
+  /**
+   * 状態変化を通知
+   * @private
+   */
+  _updateStatus(status) {
+    if (this.onStatusChange) {
+      this.onStatusChange(status, {
+        isConnected: this.isConnected,
+        isDemoMode: this.isDemoMode
+      });
+    }
+  }
+}
+// --- End src\serial\serial-manager.js ---
+
+// --- Begin src\components\digital-clock.js ---
+/**
+ * digital-clock.js
+ * 24時間表記のデジタル時計コンポーネント
+ */
+
+class DigitalClock {
+  /**
+   * @param {HTMLElement} containerElement
+   */
+  constructor(containerElement) {
+    this.container = containerElement;
+    this.timer = null;
+    this.render();
+    this.start();
+  }
+
+  render() {
+    this.container.innerHTML = `
+      <div class="digital-clock-widget">
+        <div class="clock-date" id="clock-date">----/--/-- (---)</div>
+        <div class="clock-time" id="clock-time">00:00:00</div>
+      </div>
+    `;
+    this.dateEl = this.container.querySelector('#clock-date');
+    this.timeEl = this.container.querySelector('#clock-time');
+    this.update();
+  }
+
+  start() {
+    this.timer = setInterval(() => this.update(), 1000);
+  }
+
+  stop() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+
+  update() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+
+    const year = now.getFullYear();
+    const month = pad(now.getMonth() + 1);
+    const date = pad(now.getDate());
+
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const dayName = days[now.getDay()];
+
+    const hours = pad(now.getHours());
+    const minutes = pad(now.getMinutes());
+    const seconds = pad(now.getSeconds());
+
+    if (this.dateEl) {
+      this.dateEl.textContent = `${year}/${month}/${date} (${dayName})`;
+    }
+    if (this.timeEl) {
+      this.timeEl.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+  }
+}
+// --- End src\components\digital-clock.js ---
+
+// --- Begin src\components\wind-direction-gauge.js ---
+/**
+ * wind-direction-gauge.js
+ * リアルタイム風向メーター
+ *
+ * 仕様:
+ * - 中央に方位を表す大きな太い凹四角形型（シェブロン型）の針
+ * - 円いっぱいに近く大きく描画
+ * - 最短回転アルゴリズムによるなめらかな回転アニメーション
+ * - 0度: 北(N), 90度: 東(E), 180度: 南(S), 270度: 西(W)
+ * - 計測エラー（99.9m/s）時の警告表示
+ */
+
+class WindDirectionGauge {
+  /**
+   * @param {HTMLElement} containerElement
+   */
+  constructor(containerElement) {
+    this.container = containerElement;
+    this.currentAngle = 0; // 累積角度（最短補間用）
+    this.isError = false;
+    this.direction = 0;
+    this.render();
+  }
+
+  render() {
+    this.container.innerHTML = `
+      <div class="gauge-card wind-direction-card">
+        <div class="gauge-header">
+          <span class="gauge-title">風向 (WIND DIRECTION)</span>
+          <span class="gauge-badge" id="dir-error-badge" style="display:none;">ERROR</span>
+        </div>
+        <div class="gauge-body">
+          <svg class="compass-svg" viewBox="0 0 300 300" width="100%" height="100%">
+            <defs>
+              <!-- 針のグラデーション（通常時） -->
+              <linearGradient id="needleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff" />
+                <stop offset="60%" stop-color="#0088ff" />
+                <stop offset="100%" stop-color="#0044aa" />
+              </linearGradient>
+              <!-- 針のグラデーション（エラー時） -->
+              <linearGradient id="needleErrorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#ff4444" />
+                <stop offset="60%" stop-color="#cc1111" />
+                <stop offset="100%" stop-color="#660000" />
+              </linearGradient>
+              <!-- ドロップシャドウ -->
+              <filter id="needleGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00f0ff" flood-opacity="0.5"/>
+              </filter>
+            </defs>
+
+            <!-- 外枠サークル -->
+            <circle cx="150" cy="150" r="142" class="compass-outer-ring" />
+            <circle cx="150" cy="150" r="134" class="compass-inner-ring" />
+
+            <!-- 目盛り線（30度ごと・10度ごと） -->
+            <g class="compass-ticks">
+              ${this._generateTicks()}
+            </g>
+
+            <!-- 方位ラベル -->
+            <!-- 主要4方位 (大) -->
+            <text x="150" y="32" class="compass-label major-label label-n">N</text>
+            <text x="270" y="156" class="compass-label major-label label-e">E</text>
+            <text x="150" y="280" class="compass-label major-label label-s">S</text>
+            <text x="30" y="156" class="compass-label major-label label-w">W</text>
+
+            <!-- 4主方位 (中) -->
+            <text x="232" y="74" class="compass-label minor-label">NE</text>
+            <text x="232" y="238" class="compass-label minor-label">SE</text>
+            <text x="68" y="238" class="compass-label minor-label">SW</text>
+            <text x="68" y="74" class="compass-label minor-label">NW</text>
+
+            <!-- 角度ラベル (0, 90, 180, 270) -->
+            <text x="150" y="46" class="compass-deg-label">0°</text>
+            <text x="254" y="155" class="compass-deg-label">90°</text>
+            <text x="150" y="264" class="compass-deg-label">180°</text>
+            <text x="46" y="155" class="compass-deg-label">270°</text>
+
+            <!-- シェブロン型（凹四角形）針 -->
+            <!-- 中心 (150, 150) を軸に回転 -->
+            <g id="compass-needle-group" style="transform-origin: 150px 150px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
+              <!-- 凹四角形（シェブロン）: 先端 (150, 24), 右翼端 (215, 230), 凹み底 (150, 190), 左翼端 (85, 230) -->
+              <polygon
+                id="compass-needle"
+                points="150,24 215,230 150,190 85,230"
+                fill="url(#needleGrad)"
+                stroke="#ffffff"
+                stroke-width="2.5"
+                filter="url(#needleGlow)"
+              />
+              <!-- 針の中央分割線（立体感向上） -->
+              <polygon
+                id="compass-needle-half"
+                points="150,24 215,230 150,190"
+                fill="rgba(255, 255, 255, 0.2)"
+              />
+              <!-- 中心ピボット -->
+              <circle cx="150" cy="150" r="10" fill="#0b1329" stroke="#00f0ff" stroke-width="2.5" />
+              <circle cx="150" cy="150" r="4" fill="#ffffff" />
+            </g>
+          </svg>
+        </div>
+
+        <div class="gauge-footer">
+          <div class="gauge-value-display">
+            <span class="value-number" id="dir-deg-text">---</span>
+            <span class="value-unit">°</span>
+            <span class="value-sub" id="dir-name-text">--</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.needleGroup = this.container.querySelector('#compass-needle-group');
+    this.needlePolygon = this.container.querySelector('#compass-needle');
+    this.degText = this.container.querySelector('#dir-deg-text');
+    this.nameText = this.container.querySelector('#dir-name-text');
+    this.errorBadge = this.container.querySelector('#dir-error-badge');
+  }
+
+  /**
+   * 目盛り線を生成（360度、10度刻み・30度刻み）
+   * @private
+   */
+  _generateTicks() {
+    const ticks = [];
+    const cx = 150;
+    const cy = 150;
+    const rOuter = 134;
+
+    for (let deg = 0; deg < 360; deg += 10) {
+      const isMajor = deg % 30 === 0;
+      const tickLength = isMajor ? 10 : 5;
+      const rInner = rOuter - tickLength;
+      const rad = ((deg - 90) * Math.PI) / 180;
+
+      const x1 = (cx + rOuter * Math.cos(rad)).toFixed(1);
+      const y1 = (cy + rOuter * Math.sin(rad)).toFixed(1);
+      const x2 = (cx + rInner * Math.cos(rad)).toFixed(1);
+      const y2 = (cy + rInner * Math.sin(rad)).toFixed(1);
+
+      ticks.push(
+        `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${isMajor ? '#617d98' : '#334e68'}" stroke-width="${isMajor ? 2 : 1}" />`
+      );
+    }
+    return ticks.join('\n');
+  }
+
+  /**
+   * 角度から16方位名称を取得
+   * @param {number} deg
+   * @returns {string}
+   */
+  _degToCompassName(deg) {
+    const directions = [
+      '北 (N)', '北北東 (NNE)', '北東 (NE)', '東北東 (ENE)',
+      '東 (E)', '東南東 (ESE)', '南東 (SE)', '南南東 (SSE)',
+      '南 (S)', '南南西 (SSW)', '南西 (SW)', '西南西 (WSW)',
+      '西 (W)', '西北西 (WNW)', '北西 (NW)', '北北西 (NNW)'
+    ];
+    const index = Math.round((deg % 360) / 22.5) % 16;
+    return directions[index];
+  }
+
+  /**
+   * 風向データを更新
+   * @param {object} packet
+   */
+  update(packet) {
+    if (!packet || !packet.isValid) return;
+
+    this.isError = packet.isError;
+    this.direction = packet.direction;
+
+    if (this.isError) {
+      // エラー時の表示
+      if (this.errorBadge) this.errorBadge.style.display = 'inline-block';
+      if (this.needlePolygon) {
+        this.needlePolygon.setAttribute('fill', 'url(#needleErrorGrad)');
+        this.needlePolygon.setAttribute('stroke', '#ff6666');
+      }
+      if (this.degText) {
+        this.degText.textContent = 'ERR';
+        this.degText.classList.add('error-text');
+      }
+      if (this.nameText) this.nameText.textContent = '計測エラー';
+      return;
+    }
+
+    // 正常時
+    if (this.errorBadge) this.errorBadge.style.display = 'none';
+    if (this.needlePolygon) {
+      this.needlePolygon.setAttribute('fill', 'url(#needleGrad)');
+      this.needlePolygon.setAttribute('stroke', '#ffffff');
+    }
+    if (this.degText) {
+      this.degText.textContent = String(this.direction).padStart(3, '0');
+      this.degText.classList.remove('error-text');
+    }
+    if (this.nameText) {
+      this.nameText.textContent = this._degToCompassName(this.direction);
+    }
+
+    // 最短角度でなめらかに回転
+    const targetDeg = this.direction;
+    const currentModulo = ((this.currentAngle % 360) + 360) % 360;
+    let diff = (targetDeg - currentModulo + 540) % 360 - 180;
+    this.currentAngle += diff;
+
+    if (this.needleGroup) {
+      this.needleGroup.style.transform = `rotate(${this.currentAngle}deg)`;
+    }
+  }
+}
+// --- End src\components\wind-direction-gauge.js ---
+
+// --- Begin src\components\wind-speed-gauge.js ---
+/**
+ * wind-speed-gauge.js
+ * リアルタイム風速メーター
+ *
+ * 仕様:
+ * - リアルタイム表示
+ * - 計測エラー (99.9m/s) 時のエラー警告表示
+ * - 時間軸グラフの風速スケール（5, 10, 20, 30 m/s）と連動してスケールを動的変更
+ */
+
+class WindSpeedGauge {
+  /**
+   * @param {HTMLElement} containerElement
+   * @param {number} [initialMaxScale=10]
+   */
+  constructor(containerElement, initialMaxScale = 10) {
+    this.container = containerElement;
+    this.maxScale = initialMaxScale; // 5, 10, 20, 30
+    this.currentSpeed = 0.0;
+    this.isError = false;
+    this.render();
+  }
+
+  render() {
+    this.container.innerHTML = `
+      <div class="gauge-card wind-speed-card">
+        <div class="gauge-header">
+          <span class="gauge-title">風速 (WIND SPEED)</span>
+          <span class="gauge-badge" id="speed-error-badge" style="display:none;">ERROR</span>
+        </div>
+        <div class="gauge-body">
+          <svg class="speed-svg" viewBox="0 0 300 240" width="100%" height="100%">
+            <defs>
+              <!-- 速度バーのグラデーション -->
+              <linearGradient id="speedGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#00f0ff" />
+                <stop offset="50%" stop-color="#22c55e" />
+                <stop offset="85%" stop-color="#eab308" />
+                <stop offset="100%" stop-color="#ef4444" />
+              </linearGradient>
+              <linearGradient id="speedErrorGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ef4444" />
+                <stop offset="100%" stop-color="#991b1b" />
+              </linearGradient>
+            </defs>
+
+            <!-- 背景アークトラック (開始 -210度, 終了 30度 = 240度の円弧) -->
+            <path id="speed-track-bg" class="speed-arc-track" />
+            <!-- プログレスバー（実際の風速） -->
+            <path id="speed-track-fill" class="speed-arc-fill" />
+
+            <!-- 目盛り線と数値ラベル -->
+            <g id="speed-ticks"></g>
+
+            <!-- 針 -->
+            <g id="speed-needle-group" style="transform-origin: 150px 170px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
+              <polygon points="146,170 154,170 151,45 149,45" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
+              <circle cx="150" cy="170" r="8" fill="#1e293b" stroke="#00f0ff" stroke-width="2.5" />
+            </g>
+
+            <!-- スケール表示 -->
+            <text x="150" y="210" class="speed-scale-indicator" id="speed-scale-text">SCALE: 0 - 10 m/s</text>
+          </svg>
+        </div>
+
+        <div class="gauge-footer">
+          <div class="gauge-value-display">
+            <span class="value-number" id="speed-val-text">--.-</span>
+            <span class="value-unit">m/s</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.trackBg = this.container.querySelector('#speed-track-bg');
+    this.trackFill = this.container.querySelector('#speed-track-fill');
+    this.ticksGroup = this.container.querySelector('#speed-ticks');
+    this.needleGroup = this.container.querySelector('#speed-needle-group');
+    this.scaleText = this.container.querySelector('#speed-scale-text');
+    this.valText = this.container.querySelector('#speed-val-text');
+    this.errorBadge = this.container.querySelector('#speed-error-badge');
+
+    this._setupArc();
+    this._drawTicks();
+  }
+
+  /**
+   * 円弧のパス（中心: 150, 170, 半径: 110, 開始角: -210°, 終了角: 30°）
+   * @private
+   */
+  _polarToCartesian(cx, cy, r, angleDeg) {
+    const rad = (angleDeg * Math.PI) / 180;
+    return {
+      x: cx + r * Math.cos(rad),
+      y: cy + r * Math.sin(rad)
+    };
+  }
+
+  _describeArc(cx, cy, r, startAngle, endAngle) {
+    const start = this._polarToCartesian(cx, cy, r, startAngle);
+    const end = this._polarToCartesian(cx, cy, r, endAngle);
+    const arcSweep = endAngle - startAngle <= 180 ? '0' : '1';
+    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${arcSweep} 1 ${end.x} ${end.y}`;
+  }
+
+  _setupArc() {
+    const d = this._describeArc(150, 170, 110, -210, 30);
+    this.trackBg.setAttribute('d', d);
+  }
+
+  /**
+   * 目盛り線と目盛り数値を描画
+   * @private
+   */
+  _drawTicks() {
+    const cx = 150;
+    const cy = 170;
+    const rOuter = 125;
+    const rInnerMajor = 115;
+    const rInnerMinor = 119;
+    const rText = 98;
+
+    const startAngle = -210;
+    const totalAngle = 240; // -210 to 30
+
+    const max = this.maxScale;
+    // ステップ数: 5m/sなら5分割, 10m/sなら10分割, 20m/sなら10分割(2刻み), 30m/sなら6分割(5刻み)
+    let majorSteps = 10;
+    if (max === 5) majorSteps = 5;
+    if (max === 20) majorSteps = 10;
+    if (max === 30) majorSteps = 6;
+
+    let html = '';
+
+    for (let i = 0; i <= majorSteps; i++) {
+      const fraction = i / majorSteps;
+      const angle = startAngle + fraction * totalAngle;
+      const val = (max * fraction).toFixed(max === 5 ? 0 : 0);
+
+      const pOuter = this._polarToCartesian(cx, cy, rOuter, angle);
+      const pInner = this._polarToCartesian(cx, cy, rInnerMajor, angle);
+      const pText = this._polarToCartesian(cx, cy, rText, angle);
+
+      html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="#64748b" stroke-width="2" />`;
+      html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" class="speed-tick-text">${val}</text>`;
+    }
+
+    this.ticksGroup.innerHTML = html;
+    if (this.scaleText) {
+      this.scaleText.textContent = `SCALE: 0 - ${this.maxScale} m/s`;
+    }
+  }
+
+  /**
+   * スケール上限（5, 10, 20, 30）を変更する
+   * @param {number} newMax
+   */
+  setScale(newMax) {
+    if (newMax !== this.maxScale) {
+      this.maxScale = newMax;
+      this._drawTicks();
+      this._updateVisuals();
+    }
+  }
+
+  /**
+   * 風速データを更新
+   * @param {object} packet
+   */
+  update(packet) {
+    if (!packet || !packet.isValid) return;
+
+    this.isError = packet.isError;
+    this.currentSpeed = packet.speed;
+
+    this._updateVisuals();
+  }
+
+  _updateVisuals() {
+    if (this.isError) {
+      if (this.errorBadge) this.errorBadge.style.display = 'inline-block';
+      if (this.valText) {
+        this.valText.textContent = '99.9';
+        this.valText.classList.add('error-text');
+      }
+      if (this.trackFill) {
+        // エラー時はフルスケール赤表示
+        const d = this._describeArc(150, 170, 110, -210, 30);
+        this.trackFill.setAttribute('d', d);
+        this.trackFill.setAttribute('stroke', 'url(#speedErrorGrad)');
+      }
+      if (this.needleGroup) {
+        this.needleGroup.style.transform = `rotate(30deg)`;
+      }
+      return;
+    }
+
+    if (this.errorBadge) this.errorBadge.style.display = 'none';
+    if (this.valText) {
+      this.valText.textContent = this.currentSpeed.toFixed(1);
+      this.valText.classList.remove('error-text');
+    }
+
+    // 速度比率 (0.0 〜 1.0)
+    const ratio = Math.max(0, Math.min(1.0, this.currentSpeed / this.maxScale));
+    const startAngle = -210;
+    const currentAngle = startAngle + ratio * 240;
+
+    if (this.trackFill) {
+      if (ratio > 0.005) {
+        const d = this._describeArc(150, 170, 110, startAngle, currentAngle);
+        this.trackFill.setAttribute('d', d);
+        this.trackFill.setAttribute('stroke', 'url(#speedGrad)');
+      } else {
+        this.trackFill.setAttribute('d', '');
+      }
+    }
+
+    if (this.needleGroup) {
+      // 針の初期位置は上(0度)。-210度は上から-120度
+      // 針角度 = currentAngle + 90度
+      const needleDeg = currentAngle + 90;
+      this.needleGroup.style.transform = `rotate(${needleDeg}deg)`;
+    }
+  }
+}
+// --- End src\components\wind-speed-gauge.js ---
+
+// --- Begin src\components\temperature-gauge.js ---
+/**
+ * temperature-gauge.js
+ * リアルタイム温度計コンポーネント
+ *
+ * 仕様:
+ * - 0℃ と 25℃ の位置がひと目でわかるデザイン
+ * - 華氏温度（℉）を小さく表示
+ * - 範囲: -20.0℃ 〜 +65.0℃
+ * - なめらかなバー伸縮アニメーション
+ */
+
+class TemperatureGauge {
+  /**
+   * @param {HTMLElement} containerElement
+   */
+  constructor(containerElement) {
+    this.container = containerElement;
+    this.currentTempC = 0.0;
+    this.minTemp = -20;
+    this.maxTemp = 65;
+    this.render();
+  }
+
+  render() {
+    this.container.innerHTML = `
+      <div class="gauge-card temperature-card">
+        <div class="gauge-header">
+          <span class="gauge-title">気温 (TEMPERATURE)</span>
+        </div>
+        <div class="gauge-body temp-body-layout">
+          <!-- 縦型温度計SVG -->
+          <div class="thermometer-container">
+            <svg class="thermometer-svg" viewBox="0 0 160 260" width="100%" height="100%">
+              <defs>
+                <linearGradient id="tempGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#0284c7" />   <!-- -20C 青 -->
+                  <stop offset="23.5%" stop-color="#38bdf8" /><!-- 0C 水色 -->
+                  <stop offset="53%" stop-color="#22c55e" />  <!-- 25C 緑 -->
+                  <stop offset="75%" stop-color="#eab308" />  <!-- 40C 黄 -->
+                  <stop offset="100%" stop-color="#ef4444" /> <!-- 65C 赤 -->
+                </linearGradient>
+              </defs>
+
+              <!-- 温度計の管背景 -->
+              <rect x="42" y="20" width="18" height="200" rx="9" fill="#1e293b" stroke="#334155" stroke-width="2" />
+              <!-- 下部バルブ球 -->
+              <circle cx="51" cy="225" r="18" fill="#1e293b" stroke="#334155" stroke-width="2" />
+
+              <!-- 目盛り線（-20, -10, 0, 10, 20, 25, 30, 40, 50, 60, 65） -->
+              <g class="temp-ticks">
+                ${this._generateTicksHtml()}
+              </g>
+
+              <!-- 0℃ ハイライト線とラベル -->
+              <g class="temp-special-mark mark-0c">
+                <line x1="36" y1="${this._tempToY(0)}" x2="66" y2="${this._tempToY(0)}" stroke="#38bdf8" stroke-width="2.5" />
+                <polygon points="32,${this._tempToY(0)} 37,${this._tempToY(0) - 4} 37,${this._tempToY(0) + 4}" fill="#38bdf8" />
+                <text x="74" y="${this._tempToY(0) + 4}" class="temp-highlight-text text-freeze">0℃ (氷点)</text>
+              </g>
+
+              <!-- 25℃ ハイライト線とラベル -->
+              <g class="temp-special-mark mark-25c">
+                <line x1="36" y1="${this._tempToY(25)}" x2="66" y2="${this._tempToY(25)}" stroke="#22c55e" stroke-width="2.5" />
+                <polygon points="32,${this._tempToY(25)} 37,${this._tempToY(25) - 4} 37,${this._tempToY(25) + 4}" fill="#22c55e" />
+                <text x="74" y="${this._tempToY(25) + 4}" class="temp-highlight-text text-room">25℃ (適温)</text>
+              </g>
+
+              <!-- 液体バー（動的更新） -->
+              <rect id="temp-liquid-bar" x="45" y="${this._tempToY(0)}" width="12" height="${220 - this._tempToY(0)}" rx="6" fill="url(#tempGrad)" />
+              <circle cx="51" cy="225" r="14" fill="#0284c7" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="gauge-footer temp-footer-layout">
+          <div class="gauge-value-display">
+            <span class="value-number" id="temp-c-text">--.-</span>
+            <span class="value-unit">℃</span>
+          </div>
+          <div class="temp-fahrenheit-display">
+            <span class="temp-f-label">華氏:</span>
+            <span class="temp-f-value" id="temp-f-text">--.- ℉</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.liquidBar = this.container.querySelector('#temp-liquid-bar');
+    this.cText = this.container.querySelector('#temp-c-text');
+    this.fText = this.container.querySelector('#temp-f-text');
+  }
+
+  /**
+   * 気温（-20〜+65）をY座標（210〜25）に変換
+   * @private
+   */
+  _tempToY(temp) {
+    const yMin = 210; // -20℃
+    const yMax = 25;  // +65℃
+    const ratio = (temp - this.minTemp) / (this.maxTemp - this.minTemp);
+    return yMin - ratio * (yMin - yMax);
+  }
+
+  _generateTicksHtml() {
+    let html = '';
+    for (let t = -20; t <= 65; t += 10) {
+      const y = this._tempToY(t).toFixed(1);
+      html += `
+        <line x1="38" y1="${y}" x2="42" y2="${y}" stroke="#475569" stroke-width="1.5" />
+        <text x="28" y="${(parseFloat(y) + 3).toFixed(1)}" text-anchor="end" class="temp-axis-text">${t}</text>
+      `;
+    }
+    return html;
+  }
+
+  /**
+   * 温度データを更新
+   * @param {object} packet
+   */
+  update(packet) {
+    if (!packet || !packet.isValid) return;
+
+    this.currentTempC = packet.temperature;
+
+    // 華氏計算: F = C * 1.8 + 32
+    const tempF = this.currentTempC * 1.8 + 32;
+
+    const sign = this.currentTempC >= 0 ? '+' : '';
+    if (this.cText) {
+      this.cText.textContent = `${sign}${this.currentTempC.toFixed(1)}`;
+    }
+    if (this.fText) {
+      this.fText.textContent = `${tempF.toFixed(1)} ℉`;
+    }
+
+    // 液体バーの高さ更新
+    const targetY = Math.max(25, Math.min(210, this._tempToY(this.currentTempC)));
+    const bulbY = 225;
+    const height = bulbY - targetY;
+
+    if (this.liquidBar) {
+      this.liquidBar.setAttribute('y', targetY.toFixed(1));
+      this.liquidBar.setAttribute('height', height.toFixed(1));
+    }
+  }
+}
+// --- End src\components\temperature-gauge.js ---
+
+// --- Begin src\components\time-series-chart.js ---
+/**
+ * time-series-chart.js
+ * 600点固定描画のリアルタイム時系列グラフ（HTML5 Canvas実装）
+ *
+ * 仕様:
+ * - 時間軸同期の3段トラック表示:
+ *   - 上段: 風速 [m/s] (ラインチャート)
+ *   - 中段: 風向 [deg] (点プロット / 散布図)
+ *   - 下段: 気温 [℃] (ラインチャート)
+ * - 600点固定配列（データ未達の左側は null で空白描画）
+ * - 右端（index 599）が最新の1秒データ
+ * - 時間スケール切替: 10分, 1時間, 6時間, 24時間, 7日間
+ * - 風速スケール切替: 5, 10, 20, 30 m/s
+ * - 気温スケール切替: -10〜+50℃ (default), -20〜+65℃ (max)
+ */
+
+class TimeSeriesChart {
+  /**
+   * @param {HTMLElement} containerElement
+   * @param {object} options
+   */
+  constructor(containerElement, options = {}) {
+    this.container = containerElement;
+    this.timeScale = '10m';
+    this.speedScale = 10; // 5, 10, 20, 30
+    this.tempScale = 'default'; // 'default' (-10〜+50), 'max' (-20〜+65)
+
+    this.onSpeedScaleChange = options.onSpeedScaleChange || null;
+    this.onTimeScaleChange = options.onTimeScaleChange || null;
+
+    this.plotData = new Array(PLOT_COUNT).fill(null);
+
+    this.render();
+    this._setupCanvas();
+    this._bindEvents();
+
+    window.addEventListener('resize', () => {
+      this._resizeCanvas();
+      this.draw();
+    });
+  }
+
+  render() {
+    this.container.innerHTML = `
+      <div class="chart-panel">
+        <div class="chart-controls-bar">
+          <div class="control-group">
+            <span class="control-label">時間スケール:</span>
+            <div class="btn-group" id="time-scale-group">
+              <button type="button" class="btn-scale active" data-scale="10m">10分間</button>
+              <button type="button" class="btn-scale" data-scale="1h">1時間</button>
+              <button type="button" class="btn-scale" data-scale="6h">6時間</button>
+              <button type="button" class="btn-scale" data-scale="24h">24時間</button>
+              <button type="button" class="btn-scale" data-scale="7d">7日間</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label">風速スケール:</span>
+            <div class="btn-group" id="speed-scale-group">
+              <button type="button" class="btn-scale" data-speed="5">5 m/s</button>
+              <button type="button" class="btn-scale active" data-speed="10">10 m/s</button>
+              <button type="button" class="btn-scale" data-speed="20">20 m/s</button>
+              <button type="button" class="btn-scale" data-speed="30">30 m/s</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label">気温スケール:</span>
+            <div class="btn-group" id="temp-scale-group">
+              <button type="button" class="btn-scale active" data-temp="default">-10〜+50℃</button>
+              <button type="button" class="btn-scale" data-temp="max">-20〜+65℃</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-canvas-wrapper" id="chart-canvas-wrapper">
+          <canvas id="time-series-canvas"></canvas>
+        </div>
+      </div>
+    `;
+
+    this.canvas = this.container.querySelector('#time-series-canvas');
+    this.wrapper = this.container.querySelector('#chart-canvas-wrapper');
+    this.ctx = this.canvas.getContext('2d');
+  }
+
+  _setupCanvas() {
+    this._resizeCanvas();
+    this.draw();
+  }
+
+  _resizeCanvas() {
+    const rect = this.wrapper.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(300, rect.width);
+    const height = Math.max(380, rect.height || 420);
+
+    this.canvas.width = width * dpr;
+    this.canvas.height = height * dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.scale(dpr, dpr);
+    this.width = width;
+    this.height = height;
+  }
+
+  _bindEvents() {
+    // 時間スケールボタン
+    const timeBtns = this.container.querySelectorAll('#time-scale-group .btn-scale');
+    timeBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        timeBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.timeScale = btn.getAttribute('data-scale');
+        if (this.onTimeScaleChange) {
+          this.onTimeScaleChange(this.timeScale);
+        }
+        this.draw();
+      });
+    });
+
+    // 風速スケールボタン
+    const speedBtns = this.container.querySelectorAll('#speed-scale-group .btn-scale');
+    speedBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        speedBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.speedScale = parseInt(btn.getAttribute('data-speed'), 10);
+        if (this.onSpeedScaleChange) {
+          this.onSpeedScaleChange(this.speedScale);
+        }
+        this.draw();
+      });
+    });
+
+    // 気温スケールボタン
+    const tempBtns = this.container.querySelectorAll('#temp-scale-group .btn-scale');
+    tempBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        tempBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.tempScale = btn.getAttribute('data-temp');
+        this.draw();
+      });
+    });
+  }
+
+  /**
+   * データを設定して再描画
+   * @param {Array<object|null>} plotData - 600点の配列
+   */
+  updateData(plotData) {
+    if (plotData && plotData.length === PLOT_COUNT) {
+      this.plotData = plotData;
+      this.draw();
+    }
+  }
+
+  /**
+   * チャート全体の描画
+   */
+  draw() {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const w = this.width;
+    const h = this.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // レイアウト計算
+    const marginLeft = 60;
+    const marginRight = 25;
+    const marginTop = 20;
+    const marginBottom = 35;
+    const plotWidth = w - marginLeft - marginRight;
+    const plotTotalHeight = h - marginTop - marginBottom;
+
+    // 3段分割（各段の高さと隙間）
+    const gap = 15;
+    const trackHeight = (plotTotalHeight - gap * 2) / 3;
+
+    // トラック座標
+    const tSpeed = {
+      name: '風速 [m/s]',
+      top: marginTop,
+      height: trackHeight,
+      bottom: marginTop + trackHeight,
+      yMin: 0,
+      yMax: this.speedScale,
+      color: '#00f0ff',
+      fillColor: 'rgba(0, 240, 255, 0.08)'
+    };
+
+    const tDir = {
+      name: '風向 [deg]',
+      top: marginTop + trackHeight + gap,
+      height: trackHeight,
+      bottom: marginTop + trackHeight * 2 + gap,
+      yMin: 0,
+      yMax: 359,
+      color: '#eab308'
+    };
+
+    let tempMin = this.tempScale === 'max' ? -20 : -10;
+    let tempMax = this.tempScale === 'max' ? 65 : 50;
+
+    const tTemp = {
+      name: '気温 [℃]',
+      top: marginTop + (trackHeight + gap) * 2,
+      height: trackHeight,
+      bottom: marginTop + (trackHeight + gap) * 2 + trackHeight,
+      yMin: tempMin,
+      yMax: tempMax,
+      color: '#f43f5e',
+      fillColor: 'rgba(244, 63, 94, 0.08)'
+    };
+
+    // 背景グリッドと各トラック枠の描画
+    [tSpeed, tDir, tTemp].forEach((track) => {
+      this._drawTrackBackground(ctx, track, marginLeft, plotWidth);
+    });
+
+    // データプロット
+    this._drawSpeedTrack(ctx, tSpeed, marginLeft, plotWidth);
+    this._drawDirectionTrack(ctx, tDir, marginLeft, plotWidth);
+    this._drawTemperatureTrack(ctx, tTemp, marginLeft, plotWidth);
+
+    // 横軸（時間軸ラベル・境界線）の描画
+    this._drawTimeAxis(ctx, marginLeft, plotWidth, tTemp.bottom, marginTop);
+  }
+
+  _drawTrackBackground(ctx, track, marginLeft, plotWidth) {
+    // 背景
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+    ctx.fillRect(marginLeft, track.top, plotWidth, track.height);
+
+    // 外枠
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(marginLeft, track.top, plotWidth, track.height);
+
+    // トラック名ラベル
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillStyle = track.color;
+    ctx.textAlign = 'left';
+    ctx.fillText(track.name, marginLeft + 8, track.top + 14);
+
+    // Y軸目盛り線 & ラベル（3〜5本）
+    const steps = 4;
+    ctx.textAlign = 'right';
+    ctx.font = '10px monospace';
+
+    for (let i = 0; i <= steps; i++) {
+      const val = track.yMin + (track.yMax - track.yMin) * (i / steps);
+      const y = track.bottom - track.height * (i / steps);
+
+      // グリッド線
+      ctx.strokeStyle = i === 0 || i === steps ? '#334155' : 'rgba(51, 65, 85, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(marginLeft, y);
+      ctx.lineTo(marginLeft + plotWidth, y);
+      ctx.stroke();
+
+      // 目盛り数値
+      ctx.fillStyle = '#94a3b8';
+      let valLabel = val.toFixed(0);
+      if (track.name.includes('気温') && val > 0) valLabel = `+${valLabel}`;
+      ctx.fillText(valLabel, marginLeft - 6, y + 3);
+    }
+  }
+
+  /**
+   * X座標の計算（index 0〜599）
+   */
+  _getX(index, marginLeft, plotWidth) {
+    return marginLeft + (index / (PLOT_COUNT - 1)) * plotWidth;
+  }
+
+  /**
+   * Y座標の計算
+   */
+  _getY(val, track) {
+    const ratio = (val - track.yMin) / (track.yMax - track.yMin);
+    return track.bottom - ratio * track.height;
+  }
+
+  /**
+   * 風速トラックの描画（なめらかなライン）
+   */
+  _drawSpeedTrack(ctx, track, marginLeft, plotWidth) {
+    const points = [];
+
+    for (let i = 0; i < PLOT_COUNT; i++) {
+      const p = this.plotData[i];
+      if (p && p.speed !== null && !p.isError) {
+        points.push({
+          x: this._getX(i, marginLeft, plotWidth),
+          y: Math.max(track.top, Math.min(track.bottom, this._getY(p.speed, track)))
+        });
+      } else {
+        if (points.length > 0) {
+          this._renderLine(ctx, points, track.color, track.fillColor, track.bottom);
+          points.length = 0;
+        }
+      }
+    }
+
+    if (points.length > 0) {
+      this._renderLine(ctx, points, track.color, track.fillColor, track.bottom);
+    }
+
+    // 最新値ハイライト（右端）
+    const latest = this.plotData[PLOT_COUNT - 1];
+    if (latest && latest.speed !== null) {
+      const lx = this._getX(PLOT_COUNT - 1, marginLeft, plotWidth);
+      if (latest.isError) {
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('ERR (99.9)', lx - 6, track.top + 14);
+      } else {
+        const ly = this._getY(latest.speed, track);
+        ctx.fillStyle = track.color;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${latest.speed.toFixed(1)} m/s`, lx - 6, track.top + 14);
+      }
+    }
+  }
+
+  /**
+   * 風向トラックの描画（点プロット / 散布図、ラインで繋がない）
+   */
+  _drawDirectionTrack(ctx, track, marginLeft, plotWidth) {
+    ctx.fillStyle = track.color;
+
+    for (let i = 0; i < PLOT_COUNT; i++) {
+      const p = this.plotData[i];
+      if (p && p.direction !== null && !p.isError) {
+        const x = this._getX(i, marginLeft, plotWidth);
+        const y = Math.max(track.top, Math.min(track.bottom, this._getY(p.direction, track)));
+        ctx.beginPath();
+        ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // 最新値ハイライト
+    const latest = this.plotData[PLOT_COUNT - 1];
+    if (latest && latest.direction !== null && !latest.isError) {
+      const lx = this._getX(PLOT_COUNT - 1, marginLeft, plotWidth);
+      const ly = this._getY(latest.direction, track);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(lx, ly, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = track.color;
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${String(latest.direction).padStart(3, '0')}°`, lx - 6, track.top + 14);
+    }
+  }
+
+  /**
+   * 気温トラックの描画（なめらかなライン）
+   */
+  _drawTemperatureTrack(ctx, track, marginLeft, plotWidth) {
+    const points = [];
+
+    for (let i = 0; i < PLOT_COUNT; i++) {
+      const p = this.plotData[i];
+      if (p && p.temperature !== null) {
+        points.push({
+          x: this._getX(i, marginLeft, plotWidth),
+          y: Math.max(track.top, Math.min(track.bottom, this._getY(p.temperature, track)))
+        });
+      } else {
+        if (points.length > 0) {
+          this._renderLine(ctx, points, track.color, track.fillColor, track.bottom);
+          points.length = 0;
+        }
+      }
+    }
+
+    if (points.length > 0) {
+      this._renderLine(ctx, points, track.color, track.fillColor, track.bottom);
+    }
+
+    // 最新値ハイライト
+    const latest = this.plotData[PLOT_COUNT - 1];
+    if (latest && latest.temperature !== null) {
+      const lx = this._getX(PLOT_COUNT - 1, marginLeft, plotWidth);
+      const ly = this._getY(latest.temperature, track);
+      ctx.fillStyle = track.color;
+      ctx.beginPath();
+      ctx.arc(lx, ly, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'right';
+      const sign = latest.temperature >= 0 ? '+' : '';
+      ctx.fillText(`${sign}${latest.temperature.toFixed(1)} ℃`, lx - 6, track.top + 14);
+    }
+  }
+
+  /**
+   * ラインと塗りつぶしを描画
+   */
+  _renderLine(ctx, points, strokeColor, fillColor, bottomY) {
+    if (points.length < 2) {
+      if (points.length === 1) {
+        ctx.fillStyle = strokeColor;
+        ctx.beginPath();
+        ctx.arc(points[0].x, points[0].y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return;
+    }
+
+    ctx.save();
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 1.8;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.stroke();
+
+    // 塗りつぶしグラデーション
+    if (fillColor) {
+      ctx.lineTo(points[points.length - 1].x, bottomY);
+      ctx.lineTo(points[0].x, bottomY);
+      ctx.closePath();
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * 時間軸（横軸）ラベルの描画
+   */
+  _drawTimeAxis(ctx, marginLeft, plotWidth, axisY, topY) {
+    const scaleInfo = TIME_SCALES[this.timeScale] || TIME_SCALES['10m'];
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '11px sans-serif';
+
+    // 左端（過去時刻ラベル）
+    ctx.textAlign = 'left';
+    ctx.fillText(`-${scaleInfo.label}前`, marginLeft, axisY + 18);
+
+    // 中央目盛り（中間時間）
+    ctx.textAlign = 'center';
+    ctx.fillText(`-${this._getMidLabel(scaleInfo.durationSec)}前`, marginLeft + plotWidth / 2, axisY + 18);
+
+    // 右端（現在時刻）
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillText('現在 (NOW)', marginLeft + plotWidth, axisY + 18);
+
+    // 時間の垂直ガイドライン
+    ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(marginLeft + plotWidth / 2, topY);
+    ctx.lineTo(marginLeft + plotWidth / 2, axisY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  _getMidLabel(sec) {
+    const midSec = sec / 2;
+    if (midSec < 60) return `${midSec}秒`;
+    if (midSec < 3600) return `${Math.round(midSec / 60)}分`;
+    if (midSec < 86400) return `${(midSec / 3600).toFixed(1)}時間`;
+    return `${(midSec / 86400).toFixed(1)}日`;
+  }
+}
+// --- End src\components\time-series-chart.js ---
+
+// --- Begin src\components\console-viewer.js ---
+/**
+ * console-viewer.js
+ * 受信コンソールコンポーネント
+ *
+ * 仕様:
+ * - かざみんからの受信データをシンプルに表示
+ * - タイムスタンプ表示
+ * - 値に関わらず桁数・長さが揃った等幅表示
+ * - 計測エラーデータ (99.9m/s) のときは行の表示色を変更
+ * - 受信のたびに自動スクロール（最新が最下部）
+ * - 最大200件保持
+ */
+
+class ConsoleViewer {
+  /**
+   * @param {HTMLElement} containerElement
+   * @param {number} [maxItems=200]
+   */
+  constructor(containerElement, maxItems = 200) {
+    this.container = containerElement;
+    this.maxItems = maxItems;
+    this.items = [];
+    this.autoScroll = true;
+    this.render();
+  }
+
+  render() {
+    this.container.innerHTML = `
+      <div class="console-card">
+        <div class="console-header">
+          <div class="console-title-area">
+            <span class="console-title">受信コンソール (SERIAL LOG CONSOLE)</span>
+            <span class="console-count-badge" id="console-count">0 / ${this.maxItems} 件</span>
+          </div>
+          <div class="console-actions">
+            <label class="auto-scroll-label">
+              <input type="checkbox" id="auto-scroll-toggle" checked />
+              自動スクロール
+            </label>
+            <button type="button" class="btn-clear-console" id="btn-clear-console">クリア</button>
+          </div>
+        </div>
+
+        <div class="console-table-header">
+          <span class="col-time">受信日時 (TIMESTAMP)</span>
+          <span class="col-speed">風速 [m/s]</span>
+          <span class="col-dir">風向 [deg]</span>
+          <span class="col-temp">気温 [℃]</span>
+          <span class="col-status">状態</span>
+          <span class="col-raw">RAW パケット</span>
+        </div>
+
+        <div class="console-body" id="console-body">
+          <div class="console-placeholder" id="console-placeholder">シリアル接続待ち、またはデータ受信待機中...</div>
+        </div>
+      </div>
+    `;
+
+    this.bodyEl = this.container.querySelector('#console-body');
+    this.countEl = this.container.querySelector('#console-count');
+    this.placeholderEl = this.container.querySelector('#console-placeholder');
+    this.autoScrollToggle = this.container.querySelector('#auto-scroll-toggle');
+    this.clearBtn = this.container.querySelector('#btn-clear-console');
+
+    this.autoScrollToggle.addEventListener('change', (e) => {
+      this.autoScroll = e.target.checked;
+    });
+
+    this.clearBtn.addEventListener('click', () => {
+      this.clear();
+    });
+  }
+
+  /**
+   * パケットを行として追加
+   * @param {object} packet - parsePacket の戻り値
+   */
+  addPacket(packet) {
+    if (!packet) return;
+
+    if (this.placeholderEl && this.items.length === 0) {
+      this.placeholderEl.style.display = 'none';
+    }
+
+    const item = {
+      timestamp: packet.timestamp,
+      speedStr: packet.speedStr || packet.speed.toFixed(1).padStart(4, '0'),
+      dirStr: packet.dirStr || String(packet.direction).padStart(3, '0'),
+      tempStr: packet.tempStr || (packet.temperature >= 0 ? `+${packet.temperature.toFixed(1)}` : packet.temperature.toFixed(1)),
+      isError: packet.isError,
+      isValid: packet.isValid,
+      raw: packet.raw
+    };
+
+    this.items.push(item);
+
+    // 最大200件を超えたら先頭を削除
+    if (this.items.length > this.maxItems) {
+      this.items.shift();
+      const firstRow = this.bodyEl.firstElementChild;
+      if (firstRow && firstRow !== this.placeholderEl) {
+        this.bodyEl.removeChild(firstRow);
+      }
+    }
+
+    // DOMに行を追加
+    const rowEl = document.createElement('div');
+    rowEl.className = `console-row ${item.isError ? 'row-error' : ''} ${!item.isValid ? 'row-invalid' : ''}`;
+
+    const timeText = formatTimestamp(item.timestamp);
+    const statusText = item.isError ? 'ERR' : 'OK';
+
+    rowEl.innerHTML = `
+      <span class="col-time">${timeText}</span>
+      <span class="col-speed ${item.isError ? 'val-error' : ''}">${item.speedStr}</span>
+      <span class="col-dir">${item.dirStr}°</span>
+      <span class="col-temp">${item.tempStr}</span>
+      <span class="col-status ${item.isError ? 'badge-err' : 'badge-ok'}">${statusText}</span>
+      <span class="col-raw">${item.raw}</span>
+    `;
+
+    this.bodyEl.appendChild(rowEl);
+
+    // 件数更新
+    if (this.countEl) {
+      this.countEl.textContent = `${this.items.length} / ${this.maxItems} 件`;
+    }
+
+    // 自動スクロール
+    if (this.autoScroll) {
+      this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
+    }
+  }
+
+  clear() {
+    this.items = [];
+    if (this.bodyEl) {
+      this.bodyEl.innerHTML = '';
+      if (this.placeholderEl) {
+        this.placeholderEl.style.display = 'block';
+        this.bodyEl.appendChild(this.placeholderEl);
+      }
+    }
+    if (this.countEl) {
+      this.countEl.textContent = `0 / ${this.maxItems} 件`;
+    }
+  }
+}
+// --- End src\components\console-viewer.js ---
+
+// --- Begin src\app.js ---
+/**
+ * app.js
+ * かざみんリアルタイムモニター メインアプリケーションコントローラー
+ */
+
+class App {
+  constructor() {
+    this.serialManager = new SerialManager();
+    this.storageManager = new StorageManager();
+    this.aggregator = new ChartAggregator('10m');
+
+    // UI コンポーネント参照
+    this.clock = null;
+    this.dirGauge = null;
+    this.speedGauge = null;
+    this.tempGauge = null;
+    this.chart = null;
+    this.consoleViewer = null;
+
+    // DOM 要素
+    this.btnConnect = document.getElementById('btn-connect');
+    this.btnDemo = document.getElementById('btn-demo');
+    this.statusDot = document.getElementById('status-dot');
+    this.statusText = document.getElementById('status-text');
+    this.btnExportCsv = document.getElementById('btn-export-csv');
+    this.btnClearDb = document.getElementById('btn-clear-db');
+  }
+
+  async init() {
+    console.log('かざみんリアルタイムモニター ver.0.1 起動中...');
+
+    // 1. IndexedDB 初期化
+    try {
+      await this.storageManager.init();
+      // 起動時に7日以前の過去データをパージ
+      await this.storageManager.purgeOldData(7);
+      // 1時間おきに古いデータをパージ
+      setInterval(() => this.storageManager.purgeOldData(7), 3600 * 1000);
+    } catch (e) {
+      console.warn('Storage init warning:', e);
+    }
+
+    // 2. UI コンポーネントの初期化
+    this.clock = new DigitalClock(document.getElementById('clock-container'));
+    this.dirGauge = new WindDirectionGauge(document.getElementById('gauge-dir-container'));
+    this.speedGauge = new WindSpeedGauge(document.getElementById('gauge-speed-container'), 10);
+    this.tempGauge = new TemperatureGauge(document.getElementById('gauge-temp-container'));
+    this.consoleViewer = new ConsoleViewer(document.getElementById('console-container'), 200);
+
+    // 3. 時系列チャートの初期化
+    this.chart = new TimeSeriesChart(document.getElementById('chart-container'), {
+      // 風速スケール変更時に風速メーターのスケールを連動更新
+      onSpeedScaleChange: (newMax) => {
+        if (this.speedGauge) {
+          this.speedGauge.setScale(newMax);
+        }
+      },
+      // 時間スケール変更時の処理
+      onTimeScaleChange: async (newScale) => {
+        await this._handleTimeScaleChange(newScale);
+      }
+    });
+
+    // 初期プロット（null埋め状態）を描画
+    this.chart.updateData(this.aggregator.getPlotData());
+
+    // 4. イベントバインディング
+    this._bindEvents();
+    this._setupSerialCallbacks();
+
+    // URLパラメータ ?demo=true があれば自動でデモモード起動
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('demo') === 'true' || urlParams.get('demo') === '1') {
+      this.serialManager.startDemo();
+    }
+
+    console.log('かざみんリアルタイムモニター 準備完了');
+  }
+
+  _bindEvents() {
+    // 接続 / 切断ボタン
+    this.btnConnect.addEventListener('click', async () => {
+      if (this.serialManager.isConnected) {
+        await this.serialManager.disconnect();
+      } else {
+        try {
+          await this.serialManager.connect();
+        } catch (err) {
+          if (err.name !== 'NotFoundError') {
+            alert(`接続エラー: ${err.message}`);
+          }
+        }
+      }
+    });
+
+    // デモモード切替ボタン
+    this.btnDemo.addEventListener('click', () => {
+      if (this.serialManager.isDemoMode) {
+        this.serialManager.stopDemo();
+      } else {
+        this.serialManager.startDemo();
+      }
+    });
+
+    // CSVエクスポートボタン
+    this.btnExportCsv.addEventListener('click', async () => {
+      try {
+        const records = await this.storageManager.getAll();
+        if (!records || records.length === 0) {
+          alert('保存されているデータがまだありません。');
+          return;
+        }
+        exportToCsv(records, 'kazamin_log');
+      } catch (err) {
+        alert(`CSV出力エラー: ${err.message}`);
+      }
+    });
+
+    // 履歴クリアボタン
+    if (this.btnClearDb) {
+      this.btnClearDb.addEventListener('click', async () => {
+        if (confirm('IndexedDBに蓄積されたすべての測定ログを消去しますか？')) {
+          await this.storageManager.clear();
+          alert('ログデータを消去しました。');
+        }
+      });
+    }
+  }
+
+  _setupSerialCallbacks() {
+    // データ受信時コールバック
+    this.serialManager.onPacketReceived = (packet) => {
+      this._handlePacket(packet);
+    };
+
+    // 状態変化時コールバック
+    this.serialManager.onStatusChange = (status, state) => {
+      this._handleStatusChange(status, state);
+    };
+
+    // エラー時
+    this.serialManager.onError = (err) => {
+      console.error('SerialManager error:', err);
+    };
+  }
+
+  /**
+   * 受信パケットの各コンポーネントへのディスパッチ
+   */
+  _handlePacket(packet) {
+    if (!packet) return;
+
+    // 1. 各リアルタイムメーターの更新
+    this.dirGauge.update(packet);
+    this.speedGauge.update(packet);
+    this.tempGauge.update(packet);
+
+    // 2. 受信コンソールに追加
+    this.consoleViewer.addPacket(packet);
+
+    // 3. グラフ集約エンジンに追加 & チャート再描画
+    this.aggregator.addPacket(packet);
+    this.chart.updateData(this.aggregator.getPlotData());
+
+    // 4. IndexedDB に永続化
+    if (packet.isValid) {
+      this.storageManager.savePacket(packet);
+    }
+  }
+
+  /**
+   * シリアル状態の変化ハンドラ
+   */
+  _handleStatusChange(status, state) {
+    if (state.isDemoMode) {
+      this.statusDot.className = 'connection-status-dot demo';
+      this.statusText.textContent = 'DEMO 動作中';
+      this.btnDemo.classList.add('active');
+      this.btnDemo.textContent = 'デモ停止';
+      this.btnConnect.disabled = true;
+    } else if (state.isConnected) {
+      this.statusDot.className = 'connection-status-dot connected';
+      this.statusText.textContent = 'シリアル接続中';
+      this.btnConnect.textContent = '切断';
+      this.btnConnect.classList.remove('btn-primary');
+      this.btnConnect.classList.add('btn-danger');
+      this.btnDemo.disabled = true;
+    } else {
+      this.statusDot.className = 'connection-status-dot';
+      this.statusText.textContent = '未接続';
+      this.btnConnect.textContent = 'かざみんに接続';
+      this.btnConnect.classList.remove('btn-danger');
+      this.btnConnect.classList.add('btn-primary');
+      this.btnConnect.disabled = false;
+      this.btnDemo.classList.remove('active');
+      this.btnDemo.textContent = 'デモモード';
+      this.btnDemo.disabled = false;
+    }
+  }
+
+  /**
+   * 時間スケール変更時の履歴パケット再集約
+   */
+  async _handleTimeScaleChange(newScale) {
+    const scaleConfig = TIME_SCALES[newScale];
+    if (!scaleConfig) return;
+
+    try {
+      // 必要な期間のデータを IndexedDB から取得
+      const sinceTime = Date.now() - scaleConfig.durationSec * 1000;
+      const history = await this.storageManager.getSince(sinceTime);
+
+      // パケット形式に適合させて aggregator を再構築
+      const packets = history.map((h) => ({
+        isValid: true,
+        timestamp: new Date(h.timestamp),
+        speed: h.speed,
+        direction: h.direction,
+        temperature: h.temperature,
+        isError: h.isError,
+        raw: h.raw
+      }));
+
+      this.aggregator.setScale(newScale, packets);
+      this.chart.updateData(this.aggregator.getPlotData());
+    } catch (e) {
+      console.warn('Failed to rebuild from history:', e);
+      this.aggregator.setScale(newScale, []);
+      this.chart.updateData(this.aggregator.getPlotData());
+    }
+  }
+}
+
+// アプリケーション起動
+function startApp() {
+  const app = new App();
+  app.init();
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
+}
+// --- End src\app.js ---
+
+})();
+  </script>
+</body>
+</html>
