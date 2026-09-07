@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KZM100_SerialMon_AntiG</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
+    .btn { display: inline-block; background: #0066cc; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 12px 0; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 8px 0; }
+    a { color: #0066cc; }
+  </style>
+</head>
+<body>
+  <h1>KZM100_SerialMon_AntiG</h1>
+  <p><a href="./latest/" class="btn">最新版アプリを起動する</a></p>
+  <h2>過去バージョン一覧</h2>
+  <ul id="tag-list">読み込み中...</ul>
+  <script>
+    fetch('https://api.github.com/repos/HAITAKA99/KZM100_SerialMon_AntiG/tags')
+      .then(res => res.json())
+      .then(tags => {
+        const ul = document.getElementById('tag-list');
+        ul.innerHTML = '';
+        if (!tags || tags.length === 0) {
+          ul.innerHTML = '<li>過去バージョンはありません</li>';
+          return;
+        }
+        tags.forEach(t => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="./${t.name}/">${t.name} を開く</a>`;
+          ul.appendChild(li);
+        });
+      })
+      .catch(() => {
+        document.getElementById('tag-list').innerHTML = '<li>バージョン一覧の取得に失敗しました</li>';
+      });
+  </script>
+</body>
+</html>
