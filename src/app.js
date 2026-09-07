@@ -73,8 +73,8 @@ class App {
       }
     });
 
-    // 初期プロット（null埋め状態）を描画
-    this.chart.updateData(this.aggregator.getPlotData());
+    // 初期スケール('10m')の履歴データをIndexedDBから復元して描画
+    await this._handleTimeScaleChange('10m');
 
     // 4. イベントバインディング
     this._bindEvents();

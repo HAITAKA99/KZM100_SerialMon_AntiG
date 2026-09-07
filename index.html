@@ -1216,15 +1216,18 @@ class ChartAggregator {
     this.timeScaleKey = timeScaleKey;
     this.config = TIME_SCALES[timeScaleKey] || TIME_SCALES['10m'];
 
-    // 確定済みプロット配列 (最大599点)
-    // 左端が古いデータ、右側が最新確定データ
-    this.committedPoints = [];
+    // 確定済みプロット配列 (スロット数 599点固定、インデックス 0〜598)
+    // 左端(0)が最も古いスロット、右側(598)が最新確定スロット
+    this.committedPoints = new Array(PLOT_COUNT - 1).fill(null);
 
     // 現在のインターバル期間内に受信した一時パケット群
     this.currentIntervalPackets = [];
 
-    // 最新の未平均化リアルタイム生パケット（右端用）
+    // 最新の未平均化リアルタイム生パケット（右端用、インデックス599）
     this.latestPacket = null;
+
+    // リアルタイム集約用の直前バケットID
+    this.lastBucketId = null;
   }
 
   /**
@@ -1248,26 +1251,44 @@ class ChartAggregator {
   addPacket(packet) {
     if (!packet || !packet.isValid) return;
 
-    this.latestPacket = packet;
-    this.currentIntervalPackets.push(packet);
+    const intervalSec = this.config.intervalSec;
+    const intervalMs = intervalSec * 1000;
+    const pTime = packet.timestamp instanceof Date ? packet.timestamp.getTime() : new Date(packet.timestamp).getTime();
+    const bucketId = Math.floor(pTime / intervalMs);
 
-    // インターバル秒数（Δt）に達したら平均を計算して確定点とする
-    if (this.currentIntervalPackets.length >= this.config.intervalSec) {
+    this.latestPacket = packet;
+
+    if (this.lastBucketId === null) {
+      this.lastBucketId = bucketId;
+      this.currentIntervalPackets = [packet];
+      return;
+    }
+
+    if (bucketId === this.lastBucketId) {
+      // 同一インターバル内: パケットを追加
+      this.currentIntervalPackets.push(packet);
+    } else if (bucketId > this.lastBucketId) {
+      // インターバルが進んだ: 前のインターバルの平均値を確定点としてスロットへ追加
       const avgPoint = calculateAveragePoint(this.currentIntervalPackets);
-      if (avgPoint) {
-        this.committedPoints.push(avgPoint);
-        // 確定点は最大 599点 (インデックス 0〜598) に保つ
-        if (this.committedPoints.length >= PLOT_COUNT) {
-          this.committedPoints.shift();
-        }
+      this.committedPoints.shift();
+      this.committedPoints.push(avgPoint);
+
+      // 通信途絶等で複数バケット進んだ場合は未計測スロットを null で埋める
+      const missedBuckets = bucketId - this.lastBucketId - 1;
+      const skipCount = Math.min(missedBuckets, PLOT_COUNT - 1);
+      for (let i = 0; i < skipCount; i++) {
+        this.committedPoints.shift();
+        this.committedPoints.push(null);
       }
-      this.currentIntervalPackets = [];
+
+      this.lastBucketId = bucketId;
+      this.currentIntervalPackets = [packet];
     }
   }
 
   /**
    * グラフ描画用の 600点 固定配列を取得する
-   * - インデックス 0〜598: 過去の確定平均データ（足りない左側は null）
+   * - インデックス 0〜598: 過去の確定平均データ（足りない左側や未計測期間は null）
    * - インデックス 599: 最新の1秒生パケット
    * @returns {Array<object|null>} 長さ600の配列
    */
@@ -1285,12 +1306,9 @@ class ChartAggregator {
       };
     }
 
-    // 確定済みポイントをインデックス 598 から左へ逆順に埋める
-    const count = Math.min(this.committedPoints.length, PLOT_COUNT - 1);
-    for (let i = 0; i < count; i++) {
-      const pointIndex = PLOT_COUNT - 2 - i;
-      const dataIndex = this.committedPoints.length - 1 - i;
-      result[pointIndex] = this.committedPoints[dataIndex];
+    // 確定済みポイント (インデックス 0〜598)
+    for (let i = 0; i < PLOT_COUNT - 1; i++) {
+      result[i] = this.committedPoints[i];
     }
 
     return result;
@@ -1298,57 +1316,61 @@ class ChartAggregator {
 
   /**
    * 過去ログから確定ポイントを再集計・再構築する（スケール変更時など）
+   * タイムバケット（絶対時刻の時間窓）に基づき、空白期間は正しく null スロットとして配置する
    * @param {Array} packets - 時系列順の生パケット配列
    */
   rebuildFromHistory(packets) {
-    this.committedPoints = [];
+    this.committedPoints = new Array(PLOT_COUNT - 1).fill(null);
     this.currentIntervalPackets = [];
     this.latestPacket = null;
+    this.lastBucketId = null;
 
     if (!packets || packets.length === 0) return;
 
+    const validPackets = packets.filter((p) => p && p.isValid);
+    if (validPackets.length === 0) return;
+
+    validPackets.sort((a, b) => {
+      const ta = a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime();
+      const tb = b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime();
+      return ta - tb;
+    });
+
+    const latest = validPackets[validPackets.length - 1];
+    this.latestPacket = latest;
+
     const intervalSec = this.config.intervalSec;
+    const intervalMs = intervalSec * 1000;
+    const latestMs = latest.timestamp instanceof Date ? latest.timestamp.getTime() : new Date(latest.timestamp).getTime();
+    const latestBucket = Math.floor(latestMs / intervalMs);
+    this.lastBucketId = latestBucket;
 
-    if (intervalSec === 1) {
-      // 10分スケール: 直近600秒のパケットをそのまま確定点にする
-      const startIdx = Math.max(0, packets.length - (PLOT_COUNT - 1));
-      for (let i = startIdx; i < packets.length - 1; i++) {
-        const p = packets[i];
-        if (p.isValid) {
-          this.committedPoints.push({
-            timestamp: p.timestamp,
-            speed: p.speed,
-            direction: p.direction,
-            temperature: p.temperature,
-            isError: p.isError
-          });
-        }
+    // バケットIDごとにパケットをグループ化
+    const bucketMap = new Map();
+    for (const p of validPackets) {
+      const pTime = p.timestamp instanceof Date ? p.timestamp.getTime() : new Date(p.timestamp).getTime();
+      const bId = Math.floor(pTime / intervalMs);
+      if (!bucketMap.has(bId)) {
+        bucketMap.set(bId, []);
       }
-      this.latestPacket = packets[packets.length - 1];
-      return;
+      bucketMap.get(bId).push(p);
     }
 
-    // Δt > 1 の場合: パケットを Δt 秒ごとにチャンク分けして平均計算
-    let chunk = [];
-    for (let i = 0; i < packets.length; i++) {
-      const p = packets[i];
-      if (!p.isValid) continue;
+    // 最新バケットは現在進行中のインターバル
+    this.currentIntervalPackets = bucketMap.get(latestBucket) || [];
 
-      chunk.push(p);
-      if (chunk.length >= intervalSec) {
-        const avg = calculateAveragePoint(chunk);
-        if (avg) {
-          this.committedPoints.push(avg);
-          if (this.committedPoints.length >= PLOT_COUNT) {
-            this.committedPoints.shift();
-          }
-        }
-        chunk = [];
+    // latestBucket より過去のバケットを各時間スロットにマッピング
+    // diff = 1 (1つ前のバケット) => スロット 598
+    // diff = 2 (2つ前のバケット) => スロット 597
+    // ...
+    // diff = k => スロット PLOT_COUNT - 1 - diff
+    for (const [bId, bPackets] of bucketMap.entries()) {
+      const diff = latestBucket - bId;
+      if (diff > 0 && diff < PLOT_COUNT) {
+        const slotIdx = PLOT_COUNT - 1 - diff;
+        this.committedPoints[slotIdx] = calculateAveragePoint(bPackets);
       }
     }
-
-    this.currentIntervalPackets = chunk;
-    this.latestPacket = packets[packets.length - 1];
   }
 }
 // --- End src\data\aggregator.js ---
@@ -3293,8 +3315,8 @@ class App {
       }
     });
 
-    // 初期プロット（null埋め状態）を描画
-    this.chart.updateData(this.aggregator.getPlotData());
+    // 初期スケール('10m')の履歴データをIndexedDBから復元して描画
+    await this._handleTimeScaleChange('10m');
 
     // 4. イベントバインディング
     this._bindEvents();
