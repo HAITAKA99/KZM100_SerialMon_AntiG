@@ -28,6 +28,7 @@ export class TimeSeriesChart {
     this.tempScale = 'default'; // 'default' (-10〜+50), 'max' (-20〜+65)
 
     this.onSpeedScaleChange = options.onSpeedScaleChange || null;
+    this.onTempScaleChange = options.onTempScaleChange || null;
     this.onTimeScaleChange = options.onTimeScaleChange || null;
 
     this.plotData = new Array(PLOT_COUNT).fill(null);
@@ -151,6 +152,9 @@ export class TimeSeriesChart {
         tempBtns.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         this.tempScale = btn.getAttribute('data-temp');
+        if (this.onTempScaleChange) {
+          this.onTempScaleChange(this.tempScale);
+        }
         this.draw();
       });
     });

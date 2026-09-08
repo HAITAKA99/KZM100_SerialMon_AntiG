@@ -449,45 +449,51 @@ body {
   font-family: var(--font-mono);
 }
 
-/* 温度計 レイアウト */
-.temp-body-layout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.thermometer-container {
-  width: 130px;
-  height: 100%;
-  max-height: 175px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.thermometer-svg {
+/* 温度計 SVG・スタイル */
+.temp-svg {
   height: 100%;
   max-height: 175px;
   width: auto;
+  max-width: 100%;
 }
 
-.temp-axis-text {
-  font-size: 10px;
-  fill: var(--text-muted);
+.temp-arc-track {
+  fill: none;
+  stroke: #1e293b;
+  stroke-width: 18;
+  stroke-linecap: round;
+}
+
+.temp-arc-mask {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 18;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.temp-arc-seg {
+  fill: none;
+  stroke-width: 18;
+  stroke-linecap: butt;
+}
+
+.temp-tick-text {
+  font-size: 11px;
+  fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
 
-.temp-highlight-text {
-  font-size: 10px;
-  font-weight: 700;
+.temp-scale-indicator {
+  font-size: 11px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  font-family: var(--font-mono);
 }
 
-.text-freeze {
-  fill: var(--accent-blue);
-}
-
-.text-room {
-  fill: var(--accent-green);
+.temp-highlight-mark text {
+  font-family: var(--font-mono);
+  letter-spacing: -0.5px;
 }
 
 .temp-footer-layout {
@@ -861,7 +867,7 @@ body {
     min-height: 180px;
     max-height: 220px;
   }
-  .compass-svg, .speed-svg, .thermometer-container, .thermometer-svg {
+  .compass-svg, .speed-svg, .temp-svg {
     max-height: 200px;
   }
   .chart-section {

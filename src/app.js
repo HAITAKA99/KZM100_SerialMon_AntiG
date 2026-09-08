@@ -39,7 +39,7 @@ class App {
   }
 
   async init() {
-    console.log('かざみんリアルタイムモニター ver.0.1.2 起動中...');
+    console.log('かざみんリアルタイムモニター ver.0.1.3 起動中...');
 
     // 1. IndexedDB 初期化
     try {
@@ -65,6 +65,12 @@ class App {
       onSpeedScaleChange: (newMax) => {
         if (this.speedGauge) {
           this.speedGauge.setScale(newMax);
+        }
+      },
+      // 気温スケール変更時に温度計のスケールを連動更新
+      onTempScaleChange: (newScale) => {
+        if (this.tempGauge) {
+          this.tempGauge.setScale(newScale);
         }
       },
       // 時間スケール変更時の処理
