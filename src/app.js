@@ -39,7 +39,7 @@ class App {
   }
 
   async init() {
-    console.log('かざみんリアルタイムモニター ver.0.1.0 起動中...');
+    console.log('かざみんリアルタイムモニター ver.0.1.1 起動中...');
 
     // 1. IndexedDB 初期化
     try {
@@ -204,12 +204,12 @@ class App {
     } else {
       this.statusDot.className = 'connection-status-dot';
       this.statusText.textContent = '未接続';
-      this.btnConnect.textContent = 'かざみんに接続';
+      this.btnConnect.textContent = '接続';
       this.btnConnect.classList.remove('btn-danger');
       this.btnConnect.classList.add('btn-primary');
       this.btnConnect.disabled = false;
       this.btnDemo.classList.remove('active');
-      this.btnDemo.textContent = 'デモモード';
+      this.btnDemo.textContent = 'デモ';
       this.btnDemo.disabled = false;
     }
   }

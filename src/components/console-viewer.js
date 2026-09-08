@@ -31,7 +31,7 @@ export class ConsoleViewer {
       <div class="console-card">
         <div class="console-header">
           <div class="console-title-area">
-            <span class="console-title">受信コンソール (SERIAL LOG CONSOLE)</span>
+            <span class="console-title">コンソール(Receive Console)</span>
             <span class="console-count-badge" id="console-count">0 / ${this.maxItems} 件</span>
           </div>
           <div class="console-actions">
