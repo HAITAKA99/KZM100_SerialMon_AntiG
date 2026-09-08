@@ -291,8 +291,8 @@ export class TimeSeriesChart {
 
     // --- 左右軸ヘッダー（単位・軸ラベル） ---
     ctx.font = 'bold 10px sans-serif';
-    // 左側: [℃]
-    ctx.fillStyle = '#94a3b8';
+    // 左側: [℃]（ライン色と同色の tTemp.color）
+    ctx.fillStyle = tTemp.color;
     ctx.textAlign = 'right';
     ctx.fillText('[℃]', marginLeft - 6, marginTop - 9);
 
@@ -318,11 +318,11 @@ export class TimeSeriesChart {
       ctx.lineTo(plotRight, y);
       ctx.stroke();
 
-      // 1. 左側: 気温目盛り数値 (℃)
+      // 1. 左側: 気温目盛り数値 (℃)（ラインと同色）
       const tempVal = tTemp.yMin + (tTemp.yMax - tTemp.yMin) * fraction;
       ctx.font = '10px monospace';
       ctx.textAlign = 'right';
-      ctx.fillStyle = (Math.abs(tempVal) < 0.1) ? '#38bdf8' : '#94a3b8';
+      ctx.fillStyle = tTemp.color;
       let tempLabel = tempVal.toFixed(0);
       if (tempVal > 0) tempLabel = `+${tempLabel}`;
       ctx.fillText(tempLabel, marginLeft - 6, y + 3.5);
