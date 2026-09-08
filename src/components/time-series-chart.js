@@ -40,6 +40,14 @@ export class TimeSeriesChart {
       this._resizeCanvas();
       this.draw();
     });
+
+    if (window.ResizeObserver) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this._resizeCanvas();
+        this.draw();
+      });
+      this.resizeObserver.observe(this.wrapper);
+    }
   }
 
   render() {
@@ -95,13 +103,11 @@ export class TimeSeriesChart {
   _resizeCanvas() {
     const rect = this.wrapper.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    const width = Math.max(300, rect.width);
-    const height = Math.max(380, rect.height || 420);
+    const width = Math.max(300, Math.floor(rect.width));
+    const height = Math.max(160, Math.floor(rect.height || 360));
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
-    this.canvas.style.width = `${width}px`;
-    this.canvas.style.height = `${height}px`;
 
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.scale(dpr, dpr);

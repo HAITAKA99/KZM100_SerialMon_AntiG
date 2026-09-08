@@ -51,11 +51,12 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  max-width: 1440px;
-  margin: 0 auto;
   width: 100%;
-  padding: 12px 16px;
-  gap: 16px;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 16px;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 /* ヘッダーエリア */
@@ -64,12 +65,13 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 12px 20px;
+  padding: 8px 18px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
 }
 
 .header-brand {
@@ -219,22 +221,19 @@ body {
 .app-main {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   flex: 1;
+  min-height: 0;
 }
 
 /* 上段: 3連メーターパネル */
 .gauges-section {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 8px;
   align-items: stretch;
-}
-
-@media (max-width: 900px) {
-  .gauges-section {
-    grid-template-columns: 1fr;
-  }
+  flex: 1.05;
+  min-height: 0;
 }
 
 #gauge-dir-container,
@@ -243,20 +242,21 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .gauge-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   height: 100%;
   flex: 1;
-  min-height: 360px;
+  min-height: 0;
   position: relative;
   overflow: hidden;
 }
@@ -265,12 +265,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  min-height: 24px;
+  margin-bottom: 4px;
+  min-height: 20px;
+  flex-shrink: 0;
 }
 
 .gauge-title {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--text-secondary);
   letter-spacing: 0.8px;
@@ -297,18 +298,19 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  min-height: 210px;
-  max-height: 220px;
+  min-height: 0;
+  max-height: 185px;
 }
 
 .gauge-footer {
-  margin-top: 10px;
+  margin-top: 4px;
   text-align: center;
-  min-height: 52px;
+  min-height: 42px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .gauge-value-display {
@@ -319,7 +321,7 @@ body {
 }
 
 .value-number {
-  font-size: 2.2rem;
+  font-size: 1.85rem;
   font-weight: 800;
   font-family: var(--font-mono);
   color: #ffffff;
@@ -332,13 +334,13 @@ body {
 }
 
 .value-unit {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .value-sub {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--accent-cyan);
   margin-left: 8px;
   font-weight: 600;
@@ -346,7 +348,8 @@ body {
 
 /* コンパス SVG */
 .compass-svg {
-  max-height: 205px;
+  height: 100%;
+  max-height: 175px;
   width: auto;
   max-width: 100%;
 }
@@ -393,7 +396,8 @@ body {
 
 /* スピードメーター SVG */
 .speed-svg {
-  max-height: 205px;
+  height: 100%;
+  max-height: 175px;
   width: auto;
   max-width: 100%;
 }
@@ -453,15 +457,17 @@ body {
 }
 
 .thermometer-container {
-  width: 150px;
-  height: 205px;
+  width: 130px;
+  height: 100%;
+  max-height: 175px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .thermometer-svg {
-  max-height: 205px;
+  height: 100%;
+  max-height: 175px;
   width: auto;
 }
 
@@ -510,8 +516,19 @@ body {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 10px 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  flex: 1.35;
+  min-height: 0;
+}
+
+.chart-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .chart-controls-bar {
@@ -519,10 +536,11 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .control-group {
@@ -550,7 +568,7 @@ body {
   background: none;
   border: none;
   color: var(--text-muted);
-  padding: 4px 10px;
+  padding: 3px 8px;
   font-size: 0.78rem;
   font-weight: 600;
   border-radius: 4px;
@@ -570,11 +588,16 @@ body {
 
 .chart-canvas-wrapper {
   width: 100%;
-  height: 420px;
   position: relative;
+  flex: 1;
+  min-height: 160px;
+  height: auto;
 }
 
 #time-series-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -582,28 +605,32 @@ body {
 
 /* 下段: 受信コンソール & CSV出力 */
 .bottom-section {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 0.85;
+  min-height: 0;
 }
 
 .console-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 8px 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .console-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
   flex-wrap: wrap;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .console-title-area {
@@ -647,7 +674,7 @@ body {
   background: none;
   border: 1px solid var(--border-color);
   color: var(--text-muted);
-  padding: 3px 8px;
+  padding: 2px 6px;
   font-size: 0.75rem;
   border-radius: 4px;
   cursor: pointer;
@@ -661,7 +688,7 @@ body {
 .console-table-header {
   display: grid;
   grid-template-columns: 180px 100px 90px 90px 70px 1fr;
-  padding: 6px 12px;
+  padding: 4px 12px;
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-bottom: none;
@@ -669,15 +696,18 @@ body {
   font-weight: 700;
   color: var(--text-muted);
   font-family: var(--font-mono);
+  flex-shrink: 0;
 }
 
 .console-body {
-  height: 180px;
+  flex: 1;
+  min-height: 65px;
+  height: auto;
   overflow-y: auto;
   background-color: #070d1d;
   border: 1px solid var(--border-color);
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  padding: 4px 0;
+  padding: 2px 0;
   font-family: var(--font-mono);
   font-size: 0.82rem;
 }
@@ -735,12 +765,13 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 12px 20px;
+  gap: 8px;
+  padding: 6px 16px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  margin-top: auto;
+  margin-top: 0;
+  flex-shrink: 0;
 }
 
 .footer-left {
@@ -787,6 +818,66 @@ body {
   filter: brightness(1.1);
 }
 
+/* 16:9 大画面およびデスクトップ表示（全画面表示最適化） */
+@media (min-width: 901px) and (min-height: 651px) {
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
+  .app-container {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+}
+
+/* タブレット・中画面対応 */
+@media (max-width: 900px) {
+  body {
+    overflow-y: auto;
+  }
+  .app-container {
+    height: auto;
+    min-height: 100vh;
+    padding: 10px 12px;
+    gap: 12px;
+  }
+  .gauges-section {
+    grid-template-columns: 1fr;
+    flex: none;
+  }
+  .gauge-card {
+    min-height: 280px;
+  }
+  .gauge-body {
+    min-height: 180px;
+    max-height: 220px;
+  }
+  .compass-svg, .speed-svg, .thermometer-container, .thermometer-svg {
+    max-height: 200px;
+  }
+  .chart-section {
+    flex: none;
+    height: auto;
+  }
+  .chart-canvas-wrapper {
+    height: 360px;
+    min-height: 360px;
+  }
+  #time-series-canvas {
+    position: relative;
+    height: 360px;
+  }
+  .bottom-section {
+    flex: none;
+    height: auto;
+  }
+  .console-body {
+    height: 180px;
+    flex: none;
+  }
+}
+
 /* スマホ対応 */
 @media (max-width: 680px) {
   .app-header {
@@ -798,7 +889,11 @@ body {
     justify-content: space-between;
   }
   .chart-canvas-wrapper {
-    height: 360px;
+    height: 320px;
+    min-height: 320px;
+  }
+  #time-series-canvas {
+    height: 320px;
   }
   .console-table-header, .console-row {
     grid-template-columns: 120px 70px 60px 60px 50px 1fr;
@@ -807,5 +902,31 @@ body {
   .app-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* 画面高さが非常に小さい場合のスクロール許可 */
+@media (max-height: 650px) and (min-width: 901px) {
+  body {
+    overflow-y: auto;
+  }
+  .app-container {
+    height: auto;
+    min-height: 100vh;
+  }
+  .gauge-card {
+    min-height: 220px;
+  }
+  .chart-canvas-wrapper {
+    min-height: 220px;
+    height: 220px;
+  }
+  #time-series-canvas {
+    position: relative;
+    height: 220px;
+  }
+  .console-body {
+    min-height: 120px;
+    height: 120px;
   }
 }
