@@ -232,8 +232,8 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   align-items: stretch;
-  flex: 1.05;
-  min-height: 0;
+  flex: 1.25;
+  min-height: 280px;
 }
 
 #gauge-dir-container,
@@ -256,7 +256,7 @@ body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   height: 100%;
   flex: 1;
-  min-height: 0;
+  min-height: 280px;
   position: relative;
   overflow: hidden;
 }
@@ -298,8 +298,8 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  min-height: 0;
-  max-height: 185px;
+  min-height: 180px;
+  max-height: 220px;
 }
 
 .gauge-footer {
@@ -349,7 +349,8 @@ body {
 /* コンパス SVG */
 .compass-svg {
   height: 100%;
-  max-height: 175px;
+  min-height: 180px;
+  max-height: 200px;
   width: auto;
   max-width: 100%;
 }
@@ -397,7 +398,8 @@ body {
 /* スピードメーター SVG */
 .speed-svg {
   height: 100%;
-  max-height: 175px;
+  min-height: 180px;
+  max-height: 200px;
   width: auto;
   max-width: 100%;
 }
@@ -437,78 +439,68 @@ body {
 }
 
 .speed-tick-text {
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 600;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
 
 .speed-scale-indicator {
   font-size: 11px;
+  font-weight: 600;
   fill: var(--text-muted);
   text-anchor: middle;
   font-family: var(--font-mono);
 }
 
-/* 温度計 レイアウト */
-.temp-body-layout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.thermometer-container {
-  width: 130px;
+/* 温度計 SVG・スタイル */
+.temp-svg {
   height: 100%;
-  max-height: 175px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.thermometer-svg {
-  height: 100%;
-  max-height: 175px;
+  min-height: 180px;
+  max-height: 200px;
   width: auto;
+  max-width: 100%;
 }
 
-.temp-axis-text {
-  font-size: 10px;
-  fill: var(--text-muted);
-  font-family: var(--font-mono);
+.temp-arc-track {
+  fill: none;
+  stroke: #1e293b;
+  stroke-width: 18;
+  stroke-linecap: round;
 }
 
-.temp-highlight-text {
-  font-size: 10px;
-  font-weight: 700;
+.temp-arc-mask {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 18;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.text-freeze {
-  fill: var(--accent-blue);
+.temp-arc-seg {
+  fill: none;
+  stroke-width: 18;
+  stroke-linecap: butt;
 }
 
-.text-room {
-  fill: var(--accent-green);
-}
-
-.temp-footer-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.temp-fahrenheit-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
-.temp-f-value {
-  color: var(--text-secondary);
+.temp-tick-text {
+  font-size: 11.5px;
   font-weight: 600;
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.temp-scale-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  font-family: var(--font-mono);
+}
+
+.temp-highlight-mark text {
+  font-family: var(--font-mono);
+  letter-spacing: -0.5px;
 }
 
 /* 中段: 時間軸グラフパネル */
@@ -516,7 +508,7 @@ body {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 10px 16px;
+  padding: 10px 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
@@ -534,9 +526,9 @@ body {
 .chart-controls-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 16px;
   margin-bottom: 6px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border-color);
@@ -827,7 +819,7 @@ body {
 }
 
 /* 16:9 大画面およびデスクトップ表示（全画面表示最適化） */
-@media (min-width: 901px) and (min-height: 651px) {
+@media (min-width: 901px) and (min-height: 800px) {
   body {
     height: 100vh;
     overflow: hidden;
@@ -861,7 +853,7 @@ body {
     min-height: 180px;
     max-height: 220px;
   }
-  .compass-svg, .speed-svg, .thermometer-container, .thermometer-svg {
+  .compass-svg, .speed-svg, .temp-svg {
     max-height: 200px;
   }
   .chart-section {
@@ -913,8 +905,8 @@ body {
   }
 }
 
-/* 画面高さが非常に小さい場合のスクロール許可 */
-@media (max-height: 650px) and (min-width: 901px) {
+/* 画面高さが小さい場合のスクロール許可 */
+@media (max-height: 799px) and (min-width: 901px) {
   body {
     overflow-y: auto;
   }
@@ -923,15 +915,15 @@ body {
     min-height: 100vh;
   }
   .gauge-card {
-    min-height: 220px;
+    min-height: 280px;
   }
   .chart-canvas-wrapper {
-    min-height: 220px;
-    height: 220px;
+    min-height: 240px;
+    height: 240px;
   }
   #time-series-canvas {
     position: relative;
-    height: 220px;
+    height: 240px;
   }
   .console-body {
     min-height: 120px;
