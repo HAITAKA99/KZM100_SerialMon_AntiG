@@ -196,7 +196,7 @@ class App {
   _handleStatusChange(status, state) {
     if (state.isDemoMode) {
       this.statusDot.className = 'connection-status-dot demo';
-      this.statusText.textContent = 'DEMO 動作中';
+      this.statusText.textContent = 'デモ中';
       this.btnDemo.classList.add('active');
       this.btnDemo.textContent = 'デモ停止';
       this.btnConnect.disabled = true;

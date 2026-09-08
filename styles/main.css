@@ -508,7 +508,7 @@ body {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 10px 16px;
+  padding: 10px 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
@@ -526,9 +526,9 @@ body {
 .chart-controls-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 16px;
   margin-bottom: 6px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border-color);

@@ -179,9 +179,9 @@ export class TimeSeriesChart {
 
     ctx.clearRect(0, 0, w, h);
 
-    // レイアウト計算
-    const marginLeft = 55;
-    const marginRight = 105;
+    // レイアウト計算（左右の余白を最小化してグラフ幅を最大化）
+    const marginLeft = 36;
+    const marginRight = 72;
     const marginTop = 28;
     const marginBottom = 28;
     const plotWidth = Math.max(100, w - marginLeft - marginRight);
@@ -264,7 +264,7 @@ export class TimeSeriesChart {
       measuredItems.reduce((acc, it) => acc + it.totalItemWidth, 0) +
       itemGap * (measuredItems.length - 1);
     const centerX = marginLeft + plotWidth / 2;
-    let curX = Math.max(marginLeft + 25, centerX - totalLegendWidth / 2);
+    let curX = Math.max(marginLeft + 10, centerX - totalLegendWidth / 2);
     const legendY = marginTop - 9;
 
     measuredItems.forEach((item) => {
@@ -294,15 +294,15 @@ export class TimeSeriesChart {
     // 左側: [℃]（ライン色と同色の tTemp.color）
     ctx.fillStyle = tTemp.color;
     ctx.textAlign = 'right';
-    ctx.fillText('[℃]', marginLeft - 6, marginTop - 9);
+    ctx.fillText('[℃]', marginLeft - 4, marginTop - 9);
 
     // 右側: [m/s] および [deg]
     ctx.fillStyle = tSpeed.color;
     ctx.textAlign = 'left';
-    ctx.fillText('[m/s]', plotRight + 8, marginTop - 9);
+    ctx.fillText('[m/s]', plotRight + 6, marginTop - 9);
 
     ctx.fillStyle = tDir.color;
-    ctx.fillText('[deg]', plotRight + 56, marginTop - 9);
+    ctx.fillText('[deg]', plotRight + 38, marginTop - 9);
 
     // --- 水平グリッド線 & 左右目盛り数値（5分割） ---
     const steps = 4;
@@ -325,25 +325,25 @@ export class TimeSeriesChart {
       ctx.fillStyle = tTemp.color;
       let tempLabel = tempVal.toFixed(0);
       if (tempVal > 0) tempLabel = `+${tempLabel}`;
-      ctx.fillText(tempLabel, marginLeft - 6, y + 3.5);
+      ctx.fillText(tempLabel, marginLeft - 4, y + 3.5);
 
       // 2. 右側第1列: 風速目盛り数値 (m/s)
       const speedVal = tSpeed.yMin + (tSpeed.yMax - tSpeed.yMin) * fraction;
       ctx.textAlign = 'left';
       ctx.fillStyle = tSpeed.color;
       const speedLabel = speedVal.toFixed(tSpeed.yMax === 5 ? 1 : (speedVal % 1 === 0 ? 0 : 1));
-      ctx.fillText(speedLabel, plotRight + 8, y + 3.5);
+      ctx.fillText(speedLabel, plotRight + 6, y + 3.5);
 
-      // 3. 右側第2列: 風向目盛り数値・方位
+      // 3. 右側第2列: 風向目盛り数値・方位（上限359°）
       const dirVal = Math.round(tDir.yMin + (tDir.yMax - tDir.yMin) * fraction);
       ctx.fillStyle = tDir.color;
       let dirLabel = `${dirVal}°`;
-      if (i === 4) dirLabel = '360°';
+      if (i === 4) dirLabel = '359°';
       if (i === 3) dirLabel = '270°';
       if (i === 2) dirLabel = '180°';
       if (i === 1) dirLabel = '90°';
       if (i === 0) dirLabel = '0°';
-      ctx.fillText(dirLabel, plotRight + 56, y + 3.5);
+      ctx.fillText(dirLabel, plotRight + 38, y + 3.5);
     }
   }
 
