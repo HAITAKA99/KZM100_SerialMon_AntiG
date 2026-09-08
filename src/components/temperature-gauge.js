@@ -5,7 +5,6 @@
  * 仕様:
  * - 丸形メーター（ダイアル型）デザイン
  * - 0℃（氷点）と 25℃（適温）の位置がひと目でわかるハイライト表示
- * - 華氏温度（℉）を併記表示
  * - 時間軸グラフと連動した温度スケール切替（-10〜+50℃ / -20〜+65℃）
  * - なめらかな針・アークアニメーション
  */
@@ -82,14 +81,10 @@ export class TemperatureGauge {
           </svg>
         </div>
 
-        <div class="gauge-footer temp-footer-layout">
+        <div class="gauge-footer">
           <div class="gauge-value-display">
             <span class="value-number" id="temp-c-text">--.-</span>
             <span class="value-unit">℃</span>
-          </div>
-          <div class="temp-fahrenheit-display">
-            <span class="temp-f-label">華氏:</span>
-            <span class="temp-f-value" id="temp-f-text">--.- ℉</span>
           </div>
         </div>
       </div>
@@ -106,7 +101,6 @@ export class TemperatureGauge {
     this.needleGroup = this.container.querySelector('#temp-needle-group');
     this.scaleText = this.container.querySelector('#temp-scale-text');
     this.cText = this.container.querySelector('#temp-c-text');
-    this.fText = this.container.querySelector('#temp-f-text');
 
     this._setupArc();
     this._drawTicks();
@@ -300,15 +294,10 @@ export class TemperatureGauge {
   _updateVisuals() {
     if (this.currentTempC === null || this.currentTempC === undefined) return;
 
-    // 華氏計算: F = C * 1.8 + 32
-    const tempF = this.currentTempC * 1.8 + 32;
     const sign = this.currentTempC >= 0 ? '+' : '';
 
     if (this.cText) {
       this.cText.textContent = `${sign}${this.currentTempC.toFixed(1)}`;
-    }
-    if (this.fText) {
-      this.fText.textContent = `${tempF >= 0 ? '+' : ''}${tempF.toFixed(1)} ℉`;
     }
 
     // スケール内の比率 (0.0 〜 1.0)

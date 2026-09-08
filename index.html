@@ -245,8 +245,8 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   align-items: stretch;
-  flex: 1.05;
-  min-height: 0;
+  flex: 1.25;
+  min-height: 280px;
 }
 
 #gauge-dir-container,
@@ -269,7 +269,7 @@ body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   height: 100%;
   flex: 1;
-  min-height: 0;
+  min-height: 280px;
   position: relative;
   overflow: hidden;
 }
@@ -311,8 +311,8 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  min-height: 0;
-  max-height: 185px;
+  min-height: 180px;
+  max-height: 220px;
 }
 
 .gauge-footer {
@@ -362,7 +362,8 @@ body {
 /* コンパス SVG */
 .compass-svg {
   height: 100%;
-  max-height: 175px;
+  min-height: 180px;
+  max-height: 200px;
   width: auto;
   max-width: 100%;
 }
@@ -410,7 +411,8 @@ body {
 /* スピードメーター SVG */
 .speed-svg {
   height: 100%;
-  max-height: 175px;
+  min-height: 180px;
+  max-height: 200px;
   width: auto;
   max-width: 100%;
 }
@@ -450,13 +452,15 @@ body {
 }
 
 .speed-tick-text {
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 600;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
 
 .speed-scale-indicator {
   font-size: 11px;
+  font-weight: 600;
   fill: var(--text-muted);
   text-anchor: middle;
   font-family: var(--font-mono);
@@ -465,7 +469,8 @@ body {
 /* 温度計 SVG・スタイル */
 .temp-svg {
   height: 100%;
-  max-height: 175px;
+  min-height: 180px;
+  max-height: 200px;
   width: auto;
   max-width: 100%;
 }
@@ -492,13 +497,15 @@ body {
 }
 
 .temp-tick-text {
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 600;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
 
 .temp-scale-indicator {
   font-size: 11px;
+  font-weight: 600;
   fill: var(--text-muted);
   text-anchor: middle;
   font-family: var(--font-mono);
@@ -507,27 +514,6 @@ body {
 .temp-highlight-mark text {
   font-family: var(--font-mono);
   letter-spacing: -0.5px;
-}
-
-.temp-footer-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.temp-fahrenheit-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
-.temp-f-value {
-  color: var(--text-secondary);
-  font-weight: 600;
 }
 
 /* 中段: 時間軸グラフパネル */
@@ -846,7 +832,7 @@ body {
 }
 
 /* 16:9 大画面およびデスクトップ表示（全画面表示最適化） */
-@media (min-width: 901px) and (min-height: 651px) {
+@media (min-width: 901px) and (min-height: 800px) {
   body {
     height: 100vh;
     overflow: hidden;
@@ -932,8 +918,8 @@ body {
   }
 }
 
-/* 画面高さが非常に小さい場合のスクロール許可 */
-@media (max-height: 650px) and (min-width: 901px) {
+/* 画面高さが小さい場合のスクロール許可 */
+@media (max-height: 799px) and (min-width: 901px) {
   body {
     overflow-y: auto;
   }
@@ -942,15 +928,15 @@ body {
     min-height: 100vh;
   }
   .gauge-card {
-    min-height: 220px;
+    min-height: 280px;
   }
   .chart-canvas-wrapper {
-    min-height: 220px;
-    height: 220px;
+    min-height: 240px;
+    height: 240px;
   }
   #time-series-canvas {
     position: relative;
-    height: 220px;
+    height: 240px;
   }
   .console-body {
     min-height: 120px;
@@ -2600,7 +2586,6 @@ class WindSpeedGauge {
  * 仕様:
  * - 丸形メーター（ダイアル型）デザイン
  * - 0℃（氷点）と 25℃（適温）の位置がひと目でわかるハイライト表示
- * - 華氏温度（℉）を併記表示
  * - 時間軸グラフと連動した温度スケール切替（-10〜+50℃ / -20〜+65℃）
  * - なめらかな針・アークアニメーション
  */
@@ -2677,14 +2662,10 @@ class TemperatureGauge {
           </svg>
         </div>
 
-        <div class="gauge-footer temp-footer-layout">
+        <div class="gauge-footer">
           <div class="gauge-value-display">
             <span class="value-number" id="temp-c-text">--.-</span>
             <span class="value-unit">℃</span>
-          </div>
-          <div class="temp-fahrenheit-display">
-            <span class="temp-f-label">華氏:</span>
-            <span class="temp-f-value" id="temp-f-text">--.- ℉</span>
           </div>
         </div>
       </div>
@@ -2701,7 +2682,6 @@ class TemperatureGauge {
     this.needleGroup = this.container.querySelector('#temp-needle-group');
     this.scaleText = this.container.querySelector('#temp-scale-text');
     this.cText = this.container.querySelector('#temp-c-text');
-    this.fText = this.container.querySelector('#temp-f-text');
 
     this._setupArc();
     this._drawTicks();
@@ -2895,15 +2875,10 @@ class TemperatureGauge {
   _updateVisuals() {
     if (this.currentTempC === null || this.currentTempC === undefined) return;
 
-    // 華氏計算: F = C * 1.8 + 32
-    const tempF = this.currentTempC * 1.8 + 32;
     const sign = this.currentTempC >= 0 ? '+' : '';
 
     if (this.cText) {
       this.cText.textContent = `${sign}${this.currentTempC.toFixed(1)}`;
-    }
-    if (this.fText) {
-      this.fText.textContent = `${tempF >= 0 ? '+' : ''}${tempF.toFixed(1)} ℉`;
     }
 
     // スケール内の比率 (0.0 〜 1.0)
