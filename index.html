@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>かざみんリアルタイムモニター ver.0.1.0</title>
+  <title>かざみんリアルタイムモニター ver.0.1.1</title>
   <meta name="description" content="超音波風向風速計 かざみん (KZM100A/KZM100LR) Web Serial API リアルタイム計測モニター">
   <meta name="theme-color" content="#131f3d">
   <!-- PWA Manifest -->
@@ -846,7 +846,7 @@ body {
         </svg>
         <h1 class="header-title">
           かざみんリアルタイムモニター
-          <span class="header-version">ver.0.1.0</span>
+          <span class="header-version">ver.0.1.1</span>
         </h1>
       </div>
 
@@ -864,9 +864,9 @@ body {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
-            かざみんに接続
+            接続
           </button>
-          <button type="button" id="btn-demo" class="btn btn-demo">デモモード</button>
+          <button type="button" id="btn-demo" class="btn btn-demo">デモ</button>
         </div>
       </div>
     </header>
@@ -904,7 +904,7 @@ body {
             <text x="40" y="24" fill="#ffffff" font-size="17" font-weight="bold" font-family="sans-serif">kazamin</text>
             <text x="110" y="24" fill="#38bdf8" font-size="11" font-weight="600" font-family="sans-serif">.jp</text>
           </svg>
-          <span>公式サイト (kazamin.jp)</span>
+          <span>かざみん公式サイト</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
           </svg>
@@ -913,13 +913,13 @@ body {
 
       <div class="footer-right">
         <button type="button" id="btn-clear-db" class="btn btn-secondary" title="IndexedDBに保存された全計測履歴を消去">
-          データ初期化
+          初期化
         </button>
         <button type="button" id="btn-export-csv" class="btn btn-csv">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
           </svg>
-          CSVデータ出力 (最大7日間)
+          CSV(最大7日間)
         </button>
       </div>
     </footer>
@@ -3078,7 +3078,7 @@ class TimeSeriesChart {
     // 右端（現在時刻）
     ctx.textAlign = 'right';
     ctx.fillStyle = '#00f0ff';
-    ctx.fillText('現在 (NOW)', marginLeft + plotWidth, axisY + 18);
+    ctx.fillText('現在', marginLeft + plotWidth, axisY + 18);
 
     // 時間の垂直ガイドライン
     ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
@@ -3132,7 +3132,7 @@ class ConsoleViewer {
       <div class="console-card">
         <div class="console-header">
           <div class="console-title-area">
-            <span class="console-title">受信コンソール (SERIAL LOG CONSOLE)</span>
+            <span class="console-title">コンソール(Receive Console)</span>
             <span class="console-count-badge" id="console-count">0 / ${this.maxItems} 件</span>
           </div>
           <div class="console-actions">
@@ -3281,7 +3281,7 @@ class App {
   }
 
   async init() {
-    console.log('かざみんリアルタイムモニター ver.0.1.0 起動中...');
+    console.log('かざみんリアルタイムモニター ver.0.1.1 起動中...');
 
     // 1. IndexedDB 初期化
     try {
@@ -3446,12 +3446,12 @@ class App {
     } else {
       this.statusDot.className = 'connection-status-dot';
       this.statusText.textContent = '未接続';
-      this.btnConnect.textContent = 'かざみんに接続';
+      this.btnConnect.textContent = '接続';
       this.btnConnect.classList.remove('btn-danger');
       this.btnConnect.classList.add('btn-primary');
       this.btnConnect.disabled = false;
       this.btnDemo.classList.remove('active');
-      this.btnDemo.textContent = 'デモモード';
+      this.btnDemo.textContent = 'デモ';
       this.btnDemo.disabled = false;
     }
   }

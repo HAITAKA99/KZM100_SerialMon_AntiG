@@ -470,7 +470,7 @@ export class TimeSeriesChart {
     // 右端（現在時刻）
     ctx.textAlign = 'right';
     ctx.fillStyle = '#00f0ff';
-    ctx.fillText('現在 (NOW)', marginLeft + plotWidth, axisY + 18);
+    ctx.fillText('現在', marginLeft + plotWidth, axisY + 18);
 
     // 時間の垂直ガイドライン
     ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
