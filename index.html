@@ -3090,8 +3090,8 @@ class TimeSeriesChart {
     // レイアウト計算
     const marginLeft = 55;
     const marginRight = 105;
-    const marginTop = 24;
-    const marginBottom = 30;
+    const marginTop = 28;
+    const marginBottom = 28;
     const plotWidth = Math.max(100, w - marginLeft - marginRight);
     const plotHeight = Math.max(80, h - marginTop - marginBottom);
     const plotBottom = marginTop + plotHeight;
@@ -3120,7 +3120,7 @@ class TimeSeriesChart {
       color: '#eab308'
     };
 
-    // 背景・グリッド・左右軸ラベルの描画
+    // 背景・グリッド・左右軸ラベル・凡例の描画
     this._drawUnifiedBackground(ctx, marginLeft, plotWidth, plotHeight, marginTop, plotBottom, tTemp, tSpeed, tDir);
 
     // データ描画 (1. 気温ライン, 2. 風速ライン, 3. 風向散布図)
@@ -3133,7 +3133,7 @@ class TimeSeriesChart {
   }
 
   /**
-   * 背景グリッドと左右軸ラベルの描画
+   * 背景グリッドと左右軸ラベル・凡例の描画
    * @private
    */
   _drawUnifiedBackground(ctx, marginLeft, plotWidth, plotHeight, marginTop, plotBottom, tTemp, tSpeed, tDir) {
@@ -3148,40 +3148,69 @@ class TimeSeriesChart {
     ctx.lineWidth = 1;
     ctx.strokeRect(marginLeft, marginTop, plotWidth, plotHeight);
 
-    // 最新値取得
-    const latest = this.plotData[PLOT_COUNT - 1];
-
-    // --- 上部ヘッダーラベル ---
-    // 左側: 気温 [℃]
+    // --- 上部中央の凡例（気温・風速・風向、重ならないよう動的配置） ---
+    // 気温: ライン (―)
+    // 風速: ライン (―)
+    // 風向: 点表示 (●)
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillStyle = tTemp.color;
-    ctx.textAlign = 'left';
-    let tempLatestStr = '';
-    if (latest && latest.temperature !== null) {
-      const sign = latest.temperature >= 0 ? '+' : '';
-      tempLatestStr = ` (${sign}${latest.temperature.toFixed(1)}℃)`;
-    }
-    ctx.fillText(`気温 [℃]${tempLatestStr}`, marginLeft, marginTop - 8);
+    const legendItems = [
+      { label: '気温 [℃]', color: tTemp.color, type: 'line' },
+      { label: '風速 [m/s]', color: tSpeed.color, type: 'line' },
+      { label: '風向 [deg]', color: tDir.color, type: 'dot' }
+    ];
 
-    // 右側: 風速 [m/s]
-    ctx.fillStyle = tSpeed.color;
-    let speedLatestStr = '';
-    if (latest) {
-      if (latest.isError) {
-        speedLatestStr = ' (ERR)';
-      } else if (latest.speed !== null) {
-        speedLatestStr = ` (${latest.speed.toFixed(1)}m/s)`;
+    const iconWidth = 14;
+    const iconGap = 6;
+    const itemGap = 20;
+
+    const measuredItems = legendItems.map((item) => ({
+      ...item,
+      totalItemWidth: iconWidth + iconGap + ctx.measureText(item.label).width
+    }));
+
+    const totalLegendWidth =
+      measuredItems.reduce((acc, it) => acc + it.totalItemWidth, 0) +
+      itemGap * (measuredItems.length - 1);
+    const centerX = marginLeft + plotWidth / 2;
+    let curX = Math.max(marginLeft + 25, centerX - totalLegendWidth / 2);
+    const legendY = marginTop - 9;
+
+    measuredItems.forEach((item) => {
+      if (item.type === 'line') {
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(curX, legendY - 4);
+        ctx.lineTo(curX + iconWidth, legendY - 4);
+        ctx.stroke();
+      } else if (item.type === 'dot') {
+        ctx.fillStyle = item.color;
+        ctx.beginPath();
+        ctx.arc(curX + iconWidth / 2, legendY - 4, 3.5, 0, Math.PI * 2);
+        ctx.fill();
       }
-    }
-    ctx.fillText(`風速 [m/s]${speedLatestStr}`, plotRight + 8, marginTop - 8);
 
-    // 右側: 風向 [deg]
+      ctx.fillStyle = item.color;
+      ctx.textAlign = 'left';
+      ctx.fillText(item.label, curX + iconWidth + iconGap, legendY);
+
+      curX += item.totalItemWidth + itemGap;
+    });
+
+    // --- 左右軸ヘッダー（単位・軸ラベル） ---
+    ctx.font = 'bold 10px sans-serif';
+    // 左側: [℃]
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'right';
+    ctx.fillText('[℃]', marginLeft - 6, marginTop - 9);
+
+    // 右側: [m/s] および [deg]
+    ctx.fillStyle = tSpeed.color;
+    ctx.textAlign = 'left';
+    ctx.fillText('[m/s]', plotRight + 8, marginTop - 9);
+
     ctx.fillStyle = tDir.color;
-    let dirLatestStr = '';
-    if (latest && latest.direction !== null && !latest.isError) {
-      dirLatestStr = ` (${String(latest.direction).padStart(3, '0')}°)`;
-    }
-    ctx.fillText(`風向 [deg]${dirLatestStr}`, plotRight + 56, marginTop - 8);
+    ctx.fillText('[deg]', plotRight + 56, marginTop - 9);
 
     // --- 水平グリッド線 & 左右目盛り数値（5分割） ---
     const steps = 4;
@@ -3317,25 +3346,32 @@ class TimeSeriesChart {
   }
 
   /**
-   * 風向プロットの描画（点プロット / 散布図）
+   * 風向プロットの描画（点プロット / 散布図、ラインで繋がない）
    * @private
    */
   _drawDirectionPlot(ctx, tDir, marginLeft, plotWidth, plotHeight, plotBottom) {
     ctx.fillStyle = tDir.color;
 
-    for (let i = 0; i < PLOT_COUNT; i++) {
+    let lastDrawnX = -999;
+    const minPixelSpacing = 5.0; // 点同士が重なって1本の線に見えないよう最小間隔を確保（散布図表示）
+    const dotRadius = 1.8;
+
+    for (let i = 0; i < PLOT_COUNT - 1; i++) {
       const p = this.plotData[i];
       if (p && p.direction !== null && !p.isError) {
         const x = this._getX(i, marginLeft, plotWidth);
-        const ratio = Math.max(0, Math.min(1, p.direction / 359));
-        const y = plotBottom - ratio * plotHeight;
-        ctx.beginPath();
-        ctx.arc(x, y, 1.8, 0, Math.PI * 2);
-        ctx.fill();
+        if (x - lastDrawnX >= minPixelSpacing) {
+          const ratio = Math.max(0, Math.min(1, p.direction / 359));
+          const y = plotBottom - ratio * plotHeight;
+          ctx.beginPath();
+          ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+          ctx.fill();
+          lastDrawnX = x;
+        }
       }
     }
 
-    // 最新値ポイントハイライト
+    // 最新値ポイントハイライト（右端の最新点は常に描画）
     const latest = this.plotData[PLOT_COUNT - 1];
     if (latest && latest.direction !== null && !latest.isError) {
       const lx = this._getX(PLOT_COUNT - 1, marginLeft, plotWidth);
