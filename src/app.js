@@ -39,7 +39,7 @@ class App {
   }
 
   async init() {
-    console.log('かざみんリアルタイムモニター ver.0.1.1 起動中...');
+    console.log('かざみんリアルタイムモニター ver.0.1.2 起動中...');
 
     // 1. IndexedDB 初期化
     try {
