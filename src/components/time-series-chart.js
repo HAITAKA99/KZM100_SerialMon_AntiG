@@ -203,15 +203,13 @@ export class TimeSeriesChart {
     const tTemp = {
       yMin: tempMin,
       yMax: tempMax,
-      color: '#f43f5e',
-      fillColor: 'rgba(244, 63, 94, 0.06)'
+      color: '#f43f5e'
     };
 
     const tSpeed = {
       yMin: 0,
       yMax: this.speedScale,
-      color: '#00f0ff',
-      fillColor: 'rgba(0, 240, 255, 0.06)'
+      color: '#00f0ff'
     };
 
     const tSpeedMin = {
@@ -227,8 +225,7 @@ export class TimeSeriesChart {
       yMax: this.speedScale,
       color: '#00f0ff',
       lineWidth: 2.0,
-      dash: [],
-      fillColor: 'rgba(0, 240, 255, 0.06)'
+      dash: []
     };
 
     const tSpeedMax = {
@@ -443,14 +440,14 @@ export class TimeSeriesChart {
         });
       } else {
         if (points.length > 0) {
-          this._renderLine(ctx, points, tTemp.color, tTemp.fillColor, plotBottom);
+          this._renderLine(ctx, points, tTemp.color, null, plotBottom);
           points.length = 0;
         }
       }
     }
 
     if (points.length > 0) {
-      this._renderLine(ctx, points, tTemp.color, tTemp.fillColor, plotBottom);
+      this._renderLine(ctx, points, tTemp.color, null, plotBottom);
     }
 
     // 最新値ポイントハイライト
@@ -505,7 +502,7 @@ export class TimeSeriesChart {
     if (this.timeScale === '10m') {
       // 従来通り単一ライン
       this._drawSpeedSeries(
-        ctx, 'speed', tSpeed.color, tSpeed.fillColor, 1.8, [],
+        ctx, 'speed', tSpeed.color, null, 1.8, [],
         tSpeed.yMax, marginLeft, plotWidth, plotHeight, plotBottom
       );
 
@@ -534,9 +531,9 @@ export class TimeSeriesChart {
         tSpeed.yMax, marginLeft, plotWidth, plotHeight, plotBottom
       );
 
-      // 3. 中央値ライン (シアン・実線・半透明塗りつぶし付き)
+      // 3. 中央値ライン (シアン・実線)
       this._drawSpeedSeries(
-        ctx, 'speedMedian', tSpeedMedian.color, tSpeedMedian.fillColor, tSpeedMedian.lineWidth, tSpeedMedian.dash,
+        ctx, 'speedMedian', tSpeedMedian.color, null, tSpeedMedian.lineWidth, tSpeedMedian.dash,
         tSpeed.yMax, marginLeft, plotWidth, plotHeight, plotBottom
       );
 
