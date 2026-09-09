@@ -8,7 +8,7 @@ const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './icons/kazamin.svg'
+  './icons/kazamin2.svg'
 ];
 
 // インストール時にキャッシュ
