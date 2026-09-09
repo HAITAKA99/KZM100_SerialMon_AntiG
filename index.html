@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>かざみんリアルタイムモニター ver.0.1.3</title>
+  <title>かざみんリアルタイムモニター ver.0.1.4</title>
   <meta name="description" content="超音波風向風速計 かざみん (KZM100A/KZM100LR) Web Serial API リアルタイム計測モニター">
   <meta name="theme-color" content="#131f3d">
   <!-- PWA Manifest -->
@@ -966,7 +966,7 @@ body {
         </svg>
         <h1 class="header-title">
           かざみんリアルタイムモニター
-          <span class="header-version">ver.0.1.3</span>
+          <span class="header-version">ver.0.1.4</span>
         </h1>
       </div>
 
@@ -1308,23 +1308,43 @@ function calculateAveragePoint(packets) {
   // 気温の算術平均
   const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length;
 
-  // 風速の算術平均（全件エラーの場合は null または 99.9）
+  // 風速の算術平均、最大値、最小値、中央値（全件エラーの場合は null または 99.9）
   let avgSpeed = null;
+  let minSpeed = null;
+  let maxSpeed = null;
+  let medianSpeed = null;
   let avgDir = null;
   let isError = false;
 
   if (validSpeeds.length > 0) {
     avgSpeed = validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length;
+    minSpeed = Math.min(...validSpeeds);
+    maxSpeed = Math.max(...validSpeeds);
+
+    const sortedSpeeds = [...validSpeeds].sort((a, b) => a - b);
+    const mid = Math.floor(sortedSpeeds.length / 2);
+    if (sortedSpeeds.length % 2 === 1) {
+      medianSpeed = sortedSpeeds[mid];
+    } else {
+      medianSpeed = (sortedSpeeds[mid - 1] + sortedSpeeds[mid]) / 2;
+    }
+
     avgDir = calculateVectorMeanDirection(validDirs);
   } else {
     isError = true;
     avgSpeed = 99.9;
+    minSpeed = 99.9;
+    maxSpeed = 99.9;
+    medianSpeed = 99.9;
     avgDir = null;
   }
 
   return {
     timestamp: lastTimestamp,
     speed: avgSpeed !== null ? parseFloat(avgSpeed.toFixed(1)) : null,
+    speedMin: minSpeed !== null ? parseFloat(minSpeed.toFixed(1)) : null,
+    speedMax: maxSpeed !== null ? parseFloat(maxSpeed.toFixed(1)) : null,
+    speedMedian: medianSpeed !== null ? parseFloat(medianSpeed.toFixed(1)) : null,
     direction: avgDir,
     temperature: parseFloat(avgTemp.toFixed(1)),
     isError
@@ -1417,9 +1437,13 @@ class ChartAggregator {
 
     // 最新パケット（右端 インデックス 599）
     if (this.latestPacket) {
+      const sp = this.latestPacket.speed;
       result[PLOT_COUNT - 1] = {
         timestamp: this.latestPacket.timestamp,
-        speed: this.latestPacket.speed,
+        speed: sp,
+        speedMin: sp,
+        speedMax: sp,
+        speedMedian: sp,
         direction: this.latestPacket.direction,
         temperature: this.latestPacket.temperature,
         isError: this.latestPacket.isError
@@ -3114,6 +3138,31 @@ class TimeSeriesChart {
       fillColor: 'rgba(0, 240, 255, 0.06)'
     };
 
+    const tSpeedMin = {
+      yMin: 0,
+      yMax: this.speedScale,
+      color: '#0284c7',
+      lineWidth: 1.4,
+      dash: [2, 2]
+    };
+
+    const tSpeedMedian = {
+      yMin: 0,
+      yMax: this.speedScale,
+      color: '#00f0ff',
+      lineWidth: 2.0,
+      dash: [],
+      fillColor: 'rgba(0, 240, 255, 0.06)'
+    };
+
+    const tSpeedMax = {
+      yMin: 0,
+      yMax: this.speedScale,
+      color: '#38bdf8',
+      lineWidth: 1.4,
+      dash: [4, 2]
+    };
+
     const tDir = {
       yMin: 0,
       yMax: 359,
@@ -3121,11 +3170,11 @@ class TimeSeriesChart {
     };
 
     // 背景・グリッド・左右軸ラベル・凡例の描画
-    this._drawUnifiedBackground(ctx, marginLeft, plotWidth, plotHeight, marginTop, plotBottom, tTemp, tSpeed, tDir);
+    this._drawUnifiedBackground(ctx, marginLeft, plotWidth, plotHeight, marginTop, plotBottom, tTemp, tSpeed, tDir, tSpeedMin, tSpeedMedian, tSpeedMax);
 
     // データ描画 (1. 気温ライン, 2. 風速ライン, 3. 風向散布図)
     this._drawTemperaturePlot(ctx, tTemp, marginLeft, plotWidth, plotHeight, plotBottom);
-    this._drawSpeedPlot(ctx, tSpeed, marginLeft, plotWidth, plotHeight, plotBottom);
+    this._drawSpeedPlot(ctx, tSpeed, tSpeedMin, tSpeedMedian, tSpeedMax, marginLeft, plotWidth, plotHeight, plotBottom);
     this._drawDirectionPlot(ctx, tDir, marginLeft, plotWidth, plotHeight, plotBottom);
 
     // 時間軸（横軸）の描画
@@ -3136,7 +3185,7 @@ class TimeSeriesChart {
    * 背景グリッドと左右軸ラベル・凡例の描画
    * @private
    */
-  _drawUnifiedBackground(ctx, marginLeft, plotWidth, plotHeight, marginTop, plotBottom, tTemp, tSpeed, tDir) {
+  _drawUnifiedBackground(ctx, marginLeft, plotWidth, plotHeight, marginTop, plotBottom, tTemp, tSpeed, tDir, tSpeedMin, tSpeedMedian, tSpeedMax) {
     const plotRight = marginLeft + plotWidth;
 
     // チャート背景
@@ -3149,40 +3198,61 @@ class TimeSeriesChart {
     ctx.strokeRect(marginLeft, marginTop, plotWidth, plotHeight);
 
     // --- 上部中央の凡例（気温・風速・風向、重ならないよう動的配置） ---
-    // 気温: ライン (―)
-    // 風速: ライン (―)
-    // 風向: 点表示 (●)
-    ctx.font = 'bold 11px sans-serif';
-    const legendItems = [
+    // 10分スケール: 気温 [℃], 風速 [m/s], 風向 [deg]
+    // 10分超スケール: 気温 [℃], 風速(最小) [m/s], 風速(中央) [m/s], 風速(最大) [m/s], 風向 [deg]
+    const isShortScale = this.timeScale === '10m';
+    const legendItems = isShortScale ? [
       { label: '気温 [℃]', color: tTemp.color, type: 'line' },
       { label: '風速 [m/s]', color: tSpeed.color, type: 'line' },
+      { label: '風向 [deg]', color: tDir.color, type: 'dot' }
+    ] : [
+      { label: '気温 [℃]', color: tTemp.color, type: 'line' },
+      { label: '風速(最小) [m/s]', color: tSpeedMin.color, type: 'line', dash: tSpeedMin.dash },
+      { label: '風速(中央) [m/s]', color: tSpeedMedian.color, type: 'line', dash: tSpeedMedian.dash },
+      { label: '風速(最大) [m/s]', color: tSpeedMax.color, type: 'line', dash: tSpeedMax.dash },
       { label: '風向 [deg]', color: tDir.color, type: 'dot' }
     ];
 
     const iconWidth = 14;
-    const iconGap = 6;
-    const itemGap = 20;
+    const iconGap = 5;
+    const fontSize = isShortScale ? 11 : (plotWidth < 540 ? 9.5 : 10.5);
+    const baseItemGap = isShortScale ? 20 : (plotWidth < 540 ? 8 : 14);
+
+    ctx.font = `bold ${fontSize}px sans-serif`;
 
     const measuredItems = legendItems.map((item) => ({
       ...item,
       totalItemWidth: iconWidth + iconGap + ctx.measureText(item.label).width
     }));
 
-    const totalLegendWidth =
-      measuredItems.reduce((acc, it) => acc + it.totalItemWidth, 0) +
-      itemGap * (measuredItems.length - 1);
+    const itemsTotalWidth = measuredItems.reduce((acc, it) => acc + it.totalItemWidth, 0);
+    let totalLegendWidth = itemsTotalWidth + baseItemGap * (measuredItems.length - 1);
+
+    // プロット幅を超える場合は itemGap を自動圧縮
+    let actualItemGap = baseItemGap;
+    if (totalLegendWidth > plotWidth - 16 && measuredItems.length > 1) {
+      actualItemGap = Math.max(3, (plotWidth - 16 - itemsTotalWidth) / (measuredItems.length - 1));
+      totalLegendWidth = itemsTotalWidth + actualItemGap * (measuredItems.length - 1);
+    }
+
     const centerX = marginLeft + plotWidth / 2;
-    let curX = Math.max(marginLeft + 10, centerX - totalLegendWidth / 2);
+    let curX = Math.max(marginLeft + 4, centerX - totalLegendWidth / 2);
     const legendY = marginTop - 9;
 
     measuredItems.forEach((item) => {
       if (item.type === 'line') {
         ctx.strokeStyle = item.color;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = item.dash && item.dash.length > 0 ? 2 : 2.5;
+        if (item.dash && item.dash.length > 0) {
+          ctx.setLineDash(item.dash);
+        } else {
+          ctx.setLineDash([]);
+        }
         ctx.beginPath();
         ctx.moveTo(curX, legendY - 4);
         ctx.lineTo(curX + iconWidth, legendY - 4);
         ctx.stroke();
+        ctx.setLineDash([]);
       } else if (item.type === 'dot') {
         ctx.fillStyle = item.color;
         ctx.beginPath();
@@ -3194,7 +3264,7 @@ class TimeSeriesChart {
       ctx.textAlign = 'left';
       ctx.fillText(item.label, curX + iconWidth + iconGap, legendY);
 
-      curX += item.totalItemWidth + itemGap;
+      curX += item.totalItemWidth + actualItemGap;
     });
 
     // --- 左右軸ヘッダー（単位・軸ラベル） ---
@@ -3306,42 +3376,91 @@ class TimeSeriesChart {
   }
 
   /**
-   * 風速プロットの描画（なめらかなライン）
+   * 単一の風速系列（指定プロパティ）のライン描画
    * @private
    */
-  _drawSpeedPlot(ctx, tSpeed, marginLeft, plotWidth, plotHeight, plotBottom) {
+  _drawSpeedSeries(ctx, valueKey, strokeColor, fillColor, lineWidth, lineDash, yMax, marginLeft, plotWidth, plotHeight, plotBottom) {
     const points = [];
 
     for (let i = 0; i < PLOT_COUNT; i++) {
       const p = this.plotData[i];
-      if (p && p.speed !== null && !p.isError) {
-        const ratio = Math.max(0, Math.min(1, p.speed / tSpeed.yMax));
+      const val = (p && p[valueKey] !== undefined && p[valueKey] !== null) ? p[valueKey] : (p ? p.speed : null);
+      if (p && val !== null && !p.isError) {
+        const ratio = Math.max(0, Math.min(1, val / yMax));
         points.push({
           x: this._getX(i, marginLeft, plotWidth),
           y: plotBottom - ratio * plotHeight
         });
       } else {
         if (points.length > 0) {
-          this._renderLine(ctx, points, tSpeed.color, tSpeed.fillColor, plotBottom);
+          this._renderLine(ctx, points, strokeColor, fillColor, plotBottom, lineWidth, lineDash);
           points.length = 0;
         }
       }
     }
 
     if (points.length > 0) {
-      this._renderLine(ctx, points, tSpeed.color, tSpeed.fillColor, plotBottom);
+      this._renderLine(ctx, points, strokeColor, fillColor, plotBottom, lineWidth, lineDash);
     }
+  }
 
-    // 最新値ポイントハイライト
-    const latest = this.plotData[PLOT_COUNT - 1];
-    if (latest && latest.speed !== null && !latest.isError) {
-      const lx = this._getX(PLOT_COUNT - 1, marginLeft, plotWidth);
-      const ratio = Math.max(0, Math.min(1, latest.speed / tSpeed.yMax));
-      const ly = plotBottom - ratio * plotHeight;
-      ctx.fillStyle = tSpeed.color;
-      ctx.beginPath();
-      ctx.arc(lx, ly, 4, 0, Math.PI * 2);
-      ctx.fill();
+  /**
+   * 風速プロットの描画（なめらかなライン）
+   * - 10分スケール: 単一ライン（従来通り受信生データプロット）
+   * - 10分超スケール: 最小値、最大値、中央値の3系列ライン
+   * @private
+   */
+  _drawSpeedPlot(ctx, tSpeed, tSpeedMin, tSpeedMedian, tSpeedMax, marginLeft, plotWidth, plotHeight, plotBottom) {
+    if (this.timeScale === '10m') {
+      // 従来通り単一ライン
+      this._drawSpeedSeries(
+        ctx, 'speed', tSpeed.color, tSpeed.fillColor, 1.8, [],
+        tSpeed.yMax, marginLeft, plotWidth, plotHeight, plotBottom
+      );
+
+      // 最新値ポイントハイライト
+      const latest = this.plotData[PLOT_COUNT - 1];
+      if (latest && latest.speed !== null && !latest.isError) {
+        const lx = this._getX(PLOT_COUNT - 1, marginLeft, plotWidth);
+        const ratio = Math.max(0, Math.min(1, latest.speed / tSpeed.yMax));
+        const ly = plotBottom - ratio * plotHeight;
+        ctx.fillStyle = tSpeed.color;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else {
+      // 10分超スケール: 最小値、最大値、中央値の3系列描画
+      // 1. 最小値ライン (ディープブルー・破線)
+      this._drawSpeedSeries(
+        ctx, 'speedMin', tSpeedMin.color, null, tSpeedMin.lineWidth, tSpeedMin.dash,
+        tSpeed.yMax, marginLeft, plotWidth, plotHeight, plotBottom
+      );
+
+      // 2. 最大値ライン (スカイブルー・破線)
+      this._drawSpeedSeries(
+        ctx, 'speedMax', tSpeedMax.color, null, tSpeedMax.lineWidth, tSpeedMax.dash,
+        tSpeed.yMax, marginLeft, plotWidth, plotHeight, plotBottom
+      );
+
+      // 3. 中央値ライン (シアン・実線・半透明塗りつぶし付き)
+      this._drawSpeedSeries(
+        ctx, 'speedMedian', tSpeedMedian.color, tSpeedMedian.fillColor, tSpeedMedian.lineWidth, tSpeedMedian.dash,
+        tSpeed.yMax, marginLeft, plotWidth, plotHeight, plotBottom
+      );
+
+      // 最新値ポイントハイライト（中央値・現在値）
+      const latest = this.plotData[PLOT_COUNT - 1];
+      const val = (latest && latest.speedMedian !== undefined && latest.speedMedian !== null) ? latest.speedMedian : (latest ? latest.speed : null);
+      if (latest && val !== null && !latest.isError) {
+        const lx = this._getX(PLOT_COUNT - 1, marginLeft, plotWidth);
+        const ratio = Math.max(0, Math.min(1, val / tSpeed.yMax));
+        const ly = plotBottom - ratio * plotHeight;
+        ctx.fillStyle = tSpeedMedian.color;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
   }
 
@@ -3392,7 +3511,7 @@ class TimeSeriesChart {
    * 折れ線と下部塗りつぶし描画
    * @private
    */
-  _renderLine(ctx, points, strokeColor, fillColor, bottomY) {
+  _renderLine(ctx, points, strokeColor, fillColor, bottomY, lineWidth = 1.8, lineDash = []) {
     if (points.length < 2) {
       if (points.length === 1) {
         ctx.fillStyle = strokeColor;
@@ -3405,9 +3524,12 @@ class TimeSeriesChart {
 
     ctx.save();
     ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = 1.8;
+    ctx.lineWidth = lineWidth;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
+    if (lineDash && lineDash.length > 0) {
+      ctx.setLineDash(lineDash);
+    }
 
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
@@ -3419,6 +3541,9 @@ class TimeSeriesChart {
 
     // 半透明塗りつぶし
     if (fillColor) {
+      if (lineDash && lineDash.length > 0) {
+        ctx.setLineDash([]);
+      }
       ctx.lineTo(points[points.length - 1].x, bottomY);
       ctx.lineTo(points[0].x, bottomY);
       ctx.closePath();
@@ -3652,7 +3777,7 @@ class App {
   }
 
   async init() {
-    console.log('かざみんリアルタイムモニター ver.0.1.3 起動中...');
+    console.log('かざみんリアルタイムモニター ver.0.1.4 起動中...');
 
     // 1. IndexedDB 初期化
     try {
