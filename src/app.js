@@ -202,7 +202,7 @@ class App {
       this.btnConnect.disabled = true;
     } else if (state.isConnected) {
       this.statusDot.className = 'connection-status-dot connected';
-      this.statusText.textContent = 'シリアル接続中';
+      this.statusText.textContent = '接続中';
       this.btnConnect.textContent = '切断';
       this.btnConnect.classList.remove('btn-primary');
       this.btnConnect.classList.add('btn-danger');

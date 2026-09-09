@@ -16,6 +16,14 @@
 
 import { TIME_SCALES, PLOT_COUNT } from '../data/aggregator.js';
 
+export const TIME_AXIS_LABELS = {
+  '10m': ['10分前', '5分前', '現在'],
+  '1h':  ['60分前', '50分前', '40分前', '30分前', '20分前', '10分前', '現在'],
+  '6h':  ['6時間前', '5時間前', '4時間前', '3時間前', '2時間前', '1時間前', '現在'],
+  '24h': ['24時間前', '20時間前', '16時間前', '12時間前', '8時間前', '4時間前', '現在'],
+  '7d':  ['7日前', '6日前', '5日前', '4日前', '3日前', '2日前', '1日前', '現在']
+};
+
 export class TimeSeriesChart {
   /**
    * @param {HTMLElement} containerElement
@@ -621,38 +629,43 @@ export class TimeSeriesChart {
    * @private
    */
   _drawTimeAxis(ctx, marginLeft, plotWidth, axisY, topY) {
-    const scaleInfo = TIME_SCALES[this.timeScale] || TIME_SCALES['10m'];
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '11px sans-serif';
+    const labels = TIME_AXIS_LABELS[this.timeScale] || TIME_AXIS_LABELS['10m'];
+    const count = labels.length;
+    if (count < 2) return;
 
-    // 左端（過去時刻ラベル）
-    ctx.textAlign = 'left';
-    ctx.fillText(`-${scaleInfo.label}前`, marginLeft, axisY + 18);
+    // フォントサイズ: 画面幅が狭い場合（モバイル等）に文字の重なりを防ぐ
+    const fontSize = plotWidth < 420 ? 9 : (plotWidth < 540 ? 10 : 11);
+    ctx.font = `${fontSize}px sans-serif`;
 
-    // 中央目盛り（中間時間）
-    ctx.textAlign = 'center';
-    ctx.fillText(`-${this._getMidLabel(scaleInfo.durationSec)}前`, marginLeft + plotWidth / 2, axisY + 18);
-
-    // 右端（現在時刻）
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#00f0ff';
-    ctx.fillText('現在', marginLeft + plotWidth, axisY + 18);
-
-    // 時間の中央垂直ガイドライン
-    ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+    // 垂直ガイドラインの描画（両端を除く各区切り位置）
+    ctx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
+    ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(marginLeft + plotWidth / 2, topY);
-    ctx.lineTo(marginLeft + plotWidth / 2, axisY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
 
-  _getMidLabel(sec) {
-    const midSec = sec / 2;
-    if (midSec < 60) return `${midSec}秒`;
-    if (midSec < 3600) return `${Math.round(midSec / 60)}分`;
-    if (midSec < 86400) return `${(midSec / 3600).toFixed(1)}時間`;
-    return `${(midSec / 86400).toFixed(1)}日`;
+    for (let i = 1; i < count - 1; i++) {
+      const x = marginLeft + (i / (count - 1)) * plotWidth;
+      ctx.beginPath();
+      ctx.moveTo(x, topY);
+      ctx.lineTo(x, axisY);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // 時間軸ラベルテキストの描画
+    for (let i = 0; i < count; i++) {
+      const x = marginLeft + (i / (count - 1)) * plotWidth;
+      const isLatest = (i === count - 1);
+
+      if (i === 0) {
+        ctx.textAlign = 'left';
+      } else if (isLatest) {
+        ctx.textAlign = 'right';
+      } else {
+        ctx.textAlign = 'center';
+      }
+
+      ctx.fillStyle = isLatest ? '#00f0ff' : '#94a3b8';
+      ctx.fillText(labels[i], x, axisY + 18);
+    }
   }
 }
