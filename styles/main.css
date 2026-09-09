@@ -80,6 +80,13 @@ body {
   gap: 12px;
 }
 
+.header-logo {
+  width: 32px;
+  height: 32px;
+  display: block;
+  flex-shrink: 0;
+}
+
 .header-title {
   font-size: 1.4rem;
   font-weight: 700;
@@ -796,9 +803,11 @@ body {
 }
 
 .footer-logo {
+  width: 24px;
   height: 24px;
   display: inline-block;
   vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .footer-right {

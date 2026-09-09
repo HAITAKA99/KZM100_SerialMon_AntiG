@@ -9,7 +9,7 @@
   <!-- PWA Manifest -->
   <link rel="manifest" href="./manifest.json">
   <!-- ファビコン (SVG) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%230b1329' stroke='%2300f0ff' stroke-width='6'/><polygon points='50,12 70,75 50,62 30,75' fill='%2300f0ff'/></svg>">
+  <link rel="icon" type="image/svg+xml" href="./icons/kazamin.svg">
   <style>
 /**
  * main.css
@@ -91,6 +91,13 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.header-logo {
+  width: 32px;
+  height: 32px;
+  display: block;
+  flex-shrink: 0;
 }
 
 .header-title {
@@ -809,9 +816,11 @@ body {
 }
 
 .footer-logo {
+  width: 24px;
   height: 24px;
   display: inline-block;
   vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .footer-right {
@@ -960,10 +969,7 @@ body {
     <header class="app-header">
       <div class="header-brand">
         <!-- かざみん ミニアイコン -->
-        <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
-          <circle cx="50" cy="50" r="44" stroke="#00f0ff" stroke-width="6" fill="#131f3d"/>
-          <polygon points="50,14 74,78 50,65 26,78" fill="#00f0ff"/>
-        </svg>
+        <img src="./icons/kazamin.svg" alt="かざみん" class="header-logo" width="32" height="32">
         <h1 class="header-title">
           かざみんリアルタイムモニター
           <span class="header-version">ver.0.1.5</span>
@@ -1017,13 +1023,7 @@ body {
       <div class="footer-left">
         <!-- かざみん公式ロゴ & リンク -->
         <a href="https://kazamin.jp/" target="_blank" rel="noopener noreferrer" class="footer-link" title="超音波風向風速計 かざみん 公式ホームページ">
-          <svg class="footer-logo" viewBox="0 0 160 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="32" height="32" y="2" rx="6" fill="#131f3d" stroke="#00f0ff" stroke-width="2"/>
-            <!-- 風車・風向針シンボル -->
-            <polygon points="16,6 24,26 16,22 8,26" fill="#00f0ff"/>
-            <text x="40" y="24" fill="#ffffff" font-size="17" font-weight="bold" font-family="sans-serif">kazamin</text>
-            <text x="110" y="24" fill="#38bdf8" font-size="11" font-weight="600" font-family="sans-serif">.jp</text>
-          </svg>
+          <img src="./icons/kazamin.svg" alt="かざみん" class="footer-logo" width="24" height="24">
           <span>かざみん公式サイト</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
