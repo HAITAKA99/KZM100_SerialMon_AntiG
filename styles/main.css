@@ -80,6 +80,17 @@ body {
   gap: 12px;
 }
 
+.header-logo {
+  width: 32px;
+  height: 32px;
+  background-color: #ffffff;
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  box-sizing: border-box;
+  display: block;
+  flex-shrink: 0;
+}
+
 .header-title {
   font-size: 1.4rem;
   font-weight: 700;
@@ -796,9 +807,15 @@ body {
 }
 
 .footer-logo {
+  width: 24px;
   height: 24px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  padding: 1.5px;
+  box-sizing: border-box;
   display: inline-block;
   vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .footer-right {
