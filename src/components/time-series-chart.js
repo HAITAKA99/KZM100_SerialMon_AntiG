@@ -265,11 +265,11 @@ export class TimeSeriesChart {
     const plotRight = marginLeft + plotWidth;
 
     // チャート背景
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+    ctx.fillStyle = '#0d1b2e';
     ctx.fillRect(marginLeft, marginTop, plotWidth, plotHeight);
 
     // チャート外枠
-    ctx.strokeStyle = '#334155';
+    ctx.strokeStyle = '#1e3a5f';
     ctx.lineWidth = 1;
     ctx.strokeRect(marginLeft, marginTop, plotWidth, plotHeight);
 
@@ -365,7 +365,7 @@ export class TimeSeriesChart {
       const y = plotBottom - plotHeight * fraction;
 
       // グリッド線
-      ctx.strokeStyle = (i === 0 || i === steps) ? '#334155' : 'rgba(51, 65, 85, 0.35)';
+      ctx.strokeStyle = (i === 0 || i === steps) ? '#1e3a5f' : 'rgba(30, 58, 95, 0.55)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(marginLeft, y);
@@ -638,9 +638,9 @@ export class TimeSeriesChart {
     ctx.font = `${fontSize}px sans-serif`;
 
     // 垂直ガイドラインの描画（両端を除く各区切り位置）
-    ctx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
+    ctx.strokeStyle = 'rgba(30, 58, 95, 0.55)';
     ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
+    ctx.setLineDash([]);
 
     for (let i = 1; i < count - 1; i++) {
       const x = marginLeft + (i / (count - 1)) * plotWidth;
