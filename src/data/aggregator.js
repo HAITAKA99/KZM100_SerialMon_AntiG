@@ -87,23 +87,43 @@ export function calculateAveragePoint(packets) {
   // 気温の算術平均
   const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length;
 
-  // 風速の算術平均（全件エラーの場合は null または 99.9）
+  // 風速の算術平均、最大値、最小値、中央値（全件エラーの場合は null または 99.9）
   let avgSpeed = null;
+  let minSpeed = null;
+  let maxSpeed = null;
+  let medianSpeed = null;
   let avgDir = null;
   let isError = false;
 
   if (validSpeeds.length > 0) {
     avgSpeed = validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length;
+    minSpeed = Math.min(...validSpeeds);
+    maxSpeed = Math.max(...validSpeeds);
+
+    const sortedSpeeds = [...validSpeeds].sort((a, b) => a - b);
+    const mid = Math.floor(sortedSpeeds.length / 2);
+    if (sortedSpeeds.length % 2 === 1) {
+      medianSpeed = sortedSpeeds[mid];
+    } else {
+      medianSpeed = (sortedSpeeds[mid - 1] + sortedSpeeds[mid]) / 2;
+    }
+
     avgDir = calculateVectorMeanDirection(validDirs);
   } else {
     isError = true;
     avgSpeed = 99.9;
+    minSpeed = 99.9;
+    maxSpeed = 99.9;
+    medianSpeed = 99.9;
     avgDir = null;
   }
 
   return {
     timestamp: lastTimestamp,
     speed: avgSpeed !== null ? parseFloat(avgSpeed.toFixed(1)) : null,
+    speedMin: minSpeed !== null ? parseFloat(minSpeed.toFixed(1)) : null,
+    speedMax: maxSpeed !== null ? parseFloat(maxSpeed.toFixed(1)) : null,
+    speedMedian: medianSpeed !== null ? parseFloat(medianSpeed.toFixed(1)) : null,
     direction: avgDir,
     temperature: parseFloat(avgTemp.toFixed(1)),
     isError
@@ -196,9 +216,13 @@ export class ChartAggregator {
 
     // 最新パケット（右端 インデックス 599）
     if (this.latestPacket) {
+      const sp = this.latestPacket.speed;
       result[PLOT_COUNT - 1] = {
         timestamp: this.latestPacket.timestamp,
-        speed: this.latestPacket.speed,
+        speed: sp,
+        speedMin: sp,
+        speedMax: sp,
+        speedMedian: sp,
         direction: this.latestPacket.direction,
         temperature: this.latestPacket.temperature,
         isError: this.latestPacket.isError
