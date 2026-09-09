@@ -203,8 +203,7 @@ export class TimeSeriesChart {
     const tTemp = {
       yMin: tempMin,
       yMax: tempMax,
-      color: '#f43f5e',
-      fillColor: 'rgba(244, 63, 94, 0.06)'
+      color: '#f43f5e'
     };
 
     const tSpeed = {
@@ -441,14 +440,14 @@ export class TimeSeriesChart {
         });
       } else {
         if (points.length > 0) {
-          this._renderLine(ctx, points, tTemp.color, tTemp.fillColor, plotBottom);
+          this._renderLine(ctx, points, tTemp.color, null, plotBottom);
           points.length = 0;
         }
       }
     }
 
     if (points.length > 0) {
-      this._renderLine(ctx, points, tTemp.color, tTemp.fillColor, plotBottom);
+      this._renderLine(ctx, points, tTemp.color, null, plotBottom);
     }
 
     // 最新値ポイントハイライト
