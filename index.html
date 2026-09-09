@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>かざみんリアルタイムモニター ver.0.1.4</title>
+  <title>かざみんリアルタイムモニター ver.0.1.5</title>
   <meta name="description" content="超音波風向風速計 かざみん (KZM100A/KZM100LR) Web Serial API リアルタイム計測モニター">
   <meta name="theme-color" content="#131f3d">
   <!-- PWA Manifest -->
@@ -966,7 +966,7 @@ body {
         </svg>
         <h1 class="header-title">
           かざみんリアルタイムモニター
-          <span class="header-version">ver.0.1.4</span>
+          <span class="header-version">ver.0.1.5</span>
         </h1>
       </div>
 
@@ -3470,23 +3470,17 @@ class TimeSeriesChart {
    */
   _drawDirectionPlot(ctx, tDir, marginLeft, plotWidth, plotHeight, plotBottom) {
     ctx.fillStyle = tDir.color;
-
-    let lastDrawnX = -999;
-    const minPixelSpacing = 5.0; // 点同士が重なって1本の線に見えないよう最小間隔を確保（散布図表示）
     const dotRadius = 1.8;
 
     for (let i = 0; i < PLOT_COUNT - 1; i++) {
       const p = this.plotData[i];
       if (p && p.direction !== null && !p.isError) {
         const x = this._getX(i, marginLeft, plotWidth);
-        if (x - lastDrawnX >= minPixelSpacing) {
-          const ratio = Math.max(0, Math.min(1, p.direction / 359));
-          const y = plotBottom - ratio * plotHeight;
-          ctx.beginPath();
-          ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-          ctx.fill();
-          lastDrawnX = x;
-        }
+        const ratio = Math.max(0, Math.min(1, p.direction / 359));
+        const y = plotBottom - ratio * plotHeight;
+        ctx.beginPath();
+        ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
@@ -3777,7 +3771,7 @@ class App {
   }
 
   async init() {
-    console.log('かざみんリアルタイムモニター ver.0.1.4 起動中...');
+    console.log('かざみんリアルタイムモニター ver.0.1.5 起動中...');
 
     // 1. IndexedDB 初期化
     try {

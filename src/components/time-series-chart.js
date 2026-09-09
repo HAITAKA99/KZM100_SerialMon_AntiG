@@ -538,23 +538,17 @@ export class TimeSeriesChart {
    */
   _drawDirectionPlot(ctx, tDir, marginLeft, plotWidth, plotHeight, plotBottom) {
     ctx.fillStyle = tDir.color;
-
-    let lastDrawnX = -999;
-    const minPixelSpacing = 5.0; // 点同士が重なって1本の線に見えないよう最小間隔を確保（散布図表示）
     const dotRadius = 1.8;
 
     for (let i = 0; i < PLOT_COUNT - 1; i++) {
       const p = this.plotData[i];
       if (p && p.direction !== null && !p.isError) {
         const x = this._getX(i, marginLeft, plotWidth);
-        if (x - lastDrawnX >= minPixelSpacing) {
-          const ratio = Math.max(0, Math.min(1, p.direction / 359));
-          const y = plotBottom - ratio * plotHeight;
-          ctx.beginPath();
-          ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-          ctx.fill();
-          lastDrawnX = x;
-        }
+        const ratio = Math.max(0, Math.min(1, p.direction / 359));
+        const y = plotBottom - ratio * plotHeight;
+        ctx.beginPath();
+        ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
