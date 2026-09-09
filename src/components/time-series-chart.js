@@ -265,11 +265,11 @@ export class TimeSeriesChart {
     const plotRight = marginLeft + plotWidth;
 
     // チャート背景
-    ctx.fillStyle = '#0d1b2e';
+    ctx.fillStyle = '#1e293b';
     ctx.fillRect(marginLeft, marginTop, plotWidth, plotHeight);
 
     // チャート外枠
-    ctx.strokeStyle = '#1e3a5f';
+    ctx.strokeStyle = '#334155';
     ctx.lineWidth = 1;
     ctx.strokeRect(marginLeft, marginTop, plotWidth, plotHeight);
 
@@ -358,6 +358,21 @@ export class TimeSeriesChart {
     ctx.fillStyle = tDir.color;
     ctx.fillText('[deg]', plotRight + 38, marginTop - 9);
 
+    // --- 垂直グリッド線（時間軸区切り） ---
+    const labels = TIME_AXIS_LABELS[this.timeScale] || TIME_AXIS_LABELS['10m'];
+    const count = labels.length;
+    if (count >= 2) {
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < count - 1; i++) {
+        const x = marginLeft + (i / (count - 1)) * plotWidth;
+        ctx.beginPath();
+        ctx.moveTo(x, marginTop);
+        ctx.lineTo(x, plotBottom);
+        ctx.stroke();
+      }
+    }
+
     // --- 水平グリッド線 & 左右目盛り数値（5分割） ---
     const steps = 4;
     for (let i = 0; i <= steps; i++) {
@@ -365,7 +380,7 @@ export class TimeSeriesChart {
       const y = plotBottom - plotHeight * fraction;
 
       // グリッド線
-      ctx.strokeStyle = (i === 0 || i === steps) ? '#1e3a5f' : 'rgba(30, 58, 95, 0.55)';
+      ctx.strokeStyle = '#334155';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(marginLeft, y);
@@ -636,20 +651,6 @@ export class TimeSeriesChart {
     // フォントサイズ: 画面幅が狭い場合（モバイル等）に文字の重なりを防ぐ
     const fontSize = plotWidth < 420 ? 9 : (plotWidth < 540 ? 10 : 11);
     ctx.font = `${fontSize}px sans-serif`;
-
-    // 垂直ガイドラインの描画（両端を除く各区切り位置）
-    ctx.strokeStyle = 'rgba(30, 58, 95, 0.55)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([]);
-
-    for (let i = 1; i < count - 1; i++) {
-      const x = marginLeft + (i / (count - 1)) * plotWidth;
-      ctx.beginPath();
-      ctx.moveTo(x, topY);
-      ctx.lineTo(x, axisY);
-      ctx.stroke();
-    }
-    ctx.setLineDash([]);
 
     // 時間軸ラベルテキストの描画
     for (let i = 0; i < count; i++) {

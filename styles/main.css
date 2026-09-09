@@ -4,12 +4,12 @@
  */
 
 :root {
-  --bg-primary: #0a1120;
-  --bg-card: #101d31;
-  --bg-card-hover: #162540;
-  --bg-input: #162540;
-  --border-color: #1e3a5f;
-  --border-light: #2a4f7a;
+  --bg-primary: #121826;
+  --bg-card: #1e293b;
+  --bg-card-hover: #27354a;
+  --bg-input: #0f172a;
+  --border-color: #334155;
+  --border-light: #475569;
 
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
@@ -123,7 +123,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  background-color: rgba(11, 19, 41, 0.8);
+  background-color: rgba(15, 23, 42, 0.8);
   padding: 4px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
@@ -373,7 +373,7 @@ body {
 }
 
 .compass-inner-ring {
-  fill: rgba(11, 19, 41, 0.6);
+  fill: rgba(15, 23, 42, 0.6);
   stroke: var(--border-light);
   stroke-width: 1;
 }
@@ -715,7 +715,7 @@ body {
   min-height: 65px;
   height: auto;
   overflow-y: auto;
-  background-color: #070d1d;
+  background-color: #0f172a;
   border: 1px solid var(--border-color);
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   padding: 2px 0;
