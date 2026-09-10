@@ -33,19 +33,19 @@ export class TemperatureGauge {
           <svg class="temp-svg" viewBox="0 0 300 240" width="100%" height="100%">
             <defs>
               <!-- 温度バーの4セグメント固定グラデーション（低温青〜水色〜適温緑〜黄〜赤） -->
-              <linearGradient id="tempGrad1" x1="55" y1="225" x2="55" y2="115" gradientUnits="userSpaceOnUse">
+              <linearGradient id="tempGrad1" x1="63" y1="210" x2="63" y2="110" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#0284c7" />
                 <stop offset="100%" stop-color="#38bdf8" />
               </linearGradient>
-              <linearGradient id="tempGrad2" x1="55" y1="115" x2="150" y2="60" gradientUnits="userSpaceOnUse">
+              <linearGradient id="tempGrad2" x1="63" y1="110" x2="150" y2="60" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#38bdf8" />
                 <stop offset="100%" stop-color="#22c55e" />
               </linearGradient>
-              <linearGradient id="tempGrad3" x1="150" y1="60" x2="245" y2="115" gradientUnits="userSpaceOnUse">
+              <linearGradient id="tempGrad3" x1="150" y1="60" x2="237" y2="110" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#22c55e" />
                 <stop offset="100%" stop-color="#eab308" />
               </linearGradient>
-              <linearGradient id="tempGrad4" x1="245" y1="115" x2="245" y2="225" gradientUnits="userSpaceOnUse">
+              <linearGradient id="tempGrad4" x1="237" y1="110" x2="237" y2="210" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#eab308" />
                 <stop offset="100%" stop-color="#ef4444" />
               </linearGradient>
@@ -71,13 +71,13 @@ export class TemperatureGauge {
             <g id="temp-ticks"></g>
 
             <!-- 針 -->
-            <g id="temp-needle-group" style="transform-origin: 150px 170px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
-              <polygon points="146,170 154,170 151,45 149,45" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
-              <circle cx="150" cy="170" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5" />
+            <g id="temp-needle-group" style="transform-origin: 150px 160px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
+              <polygon points="146,160 154,160 151,56 149,56" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
+              <circle cx="150" cy="160" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5" />
             </g>
 
             <!-- スケール表示 -->
-            <text x="150" y="210" class="temp-scale-indicator" id="temp-scale-text">SCALE: -10 ~ +50 ℃</text>
+            <text x="150" y="202" class="temp-scale-indicator" id="temp-scale-text">SCALE: -10 ~ +50 ℃</text>
           </svg>
         </div>
 
@@ -130,18 +130,18 @@ export class TemperatureGauge {
   }
 
   _setupArc() {
-    const fullArc = this._describeArc(150, 170, 110, -210, 30);
+    const fullArc = this._describeArc(150, 160, 100, -210, 30);
     this.trackBg.setAttribute('d', fullArc);
 
     // 4セグメント（各60度）のパスを設定してグラデーションを全域固定
-    this.seg1.setAttribute('d', this._describeArc(150, 170, 110, -210, -150));
-    this.seg2.setAttribute('d', this._describeArc(150, 170, 110, -150, -90));
-    this.seg3.setAttribute('d', this._describeArc(150, 170, 110, -90, -30));
-    this.seg4.setAttribute('d', this._describeArc(150, 170, 110, -30, 30));
+    this.seg1.setAttribute('d', this._describeArc(150, 160, 100, -210, -150));
+    this.seg2.setAttribute('d', this._describeArc(150, 160, 100, -150, -90));
+    this.seg3.setAttribute('d', this._describeArc(150, 160, 100, -90, -30));
+    this.seg4.setAttribute('d', this._describeArc(150, 160, 100, -30, 30));
 
     // マスク円弧の初期設定
     this.maskArc.setAttribute('d', fullArc);
-    this.arcLength = (this.maskArc.getTotalLength && this.maskArc.getTotalLength()) || 460.77;
+    this.arcLength = (this.maskArc.getTotalLength && this.maskArc.getTotalLength()) || 418.88;
     this.maskArc.style.strokeDasharray = `${this.arcLength} ${this.arcLength}`;
     this.maskArc.style.strokeDashoffset = `${this.arcLength}`;
   }
@@ -161,12 +161,12 @@ export class TemperatureGauge {
    */
   _drawTicks() {
     const cx = 150;
-    const cy = 170;
-    const rOuter = 125;
-    const rInnerMajor = 115;
-    const rInnerMinor = 119;
-    const rText = 98;
-    const rHighlightText = 74;
+    const cy = 160;
+    const rOuter = 118;
+    const rInnerMajor = 108;
+    const rOuterMinor = 114;
+    const rText = 132;
+    const rHighlightText = 68;
 
     let html = '';
 
@@ -198,8 +198,8 @@ export class TemperatureGauge {
     // 小目盛りの描画
     minorValues.forEach((val) => {
       const angle = this._tempToAngle(val);
-      const pOuter = this._polarToCartesian(cx, cy, rOuter - 3, angle);
-      const pInner = this._polarToCartesian(cx, cy, rInnerMinor, angle);
+      const pOuter = this._polarToCartesian(cx, cy, rOuterMinor, angle);
+      const pInner = this._polarToCartesian(cx, cy, rInnerMajor, angle);
       html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="#475569" stroke-width="1.2" />`;
     });
 
@@ -217,7 +217,7 @@ export class TemperatureGauge {
       const pText = this._polarToCartesian(cx, cy, rText, angle);
 
       html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="${strokeColor}" stroke-width="${strokeW}" />`;
-      html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" class="temp-tick-text" style="fill: ${textColor}; font-weight: ${fontWeight};">${val}</text>`;
+      html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="temp-tick-text" style="fill: ${textColor}; font-weight: ${fontWeight};">${val}</text>`;
     });
 
     // 25℃（適温）の特別目盛り
@@ -228,13 +228,13 @@ export class TemperatureGauge {
       const pText25 = this._polarToCartesian(cx, cy, rText, angle25);
 
       html += `<line x1="${pOuter25.x.toFixed(1)}" y1="${pOuter25.y.toFixed(1)}" x2="${pInner25.x.toFixed(1)}" y2="${pInner25.y.toFixed(1)}" stroke="#22c55e" stroke-width="2.5" />`;
-      html += `<text x="${pText25.x.toFixed(1)}" y="${(pText25.y + 4).toFixed(1)}" text-anchor="middle" class="temp-tick-text" style="fill: var(--accent-green); font-weight: bold;">25</text>`;
+      html += `<text x="${pText25.x.toFixed(1)}" y="${(pText25.y + 4).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="temp-tick-text" style="fill: var(--accent-green); font-weight: bold;">25</text>`;
 
       // 25℃(適温) テキストラベル
       const pLabel25 = this._polarToCartesian(cx, cy, rHighlightText, angle25);
       html += `
         <g class="temp-highlight-mark">
-          <text x="${pLabel25.x.toFixed(1)}" y="${(pLabel25.y + 3).toFixed(1)}" text-anchor="middle" fill="#22c55e" font-size="9.5" font-weight="700">25℃(適温)</text>
+          <text x="${pLabel25.x.toFixed(1)}" y="${(pLabel25.y + 3).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#22c55e" font-size="9.5" font-weight="700">25℃(適温)</text>
         </g>
       `;
     }
@@ -245,7 +245,7 @@ export class TemperatureGauge {
       const pLabel0 = this._polarToCartesian(cx, cy, rHighlightText, angle0);
       html += `
         <g class="temp-highlight-mark">
-          <text x="${pLabel0.x.toFixed(1)}" y="${(pLabel0.y + 3).toFixed(1)}" text-anchor="middle" fill="#38bdf8" font-size="9.5" font-weight="700">0℃(氷点)</text>
+          <text x="${pLabel0.x.toFixed(1)}" y="${(pLabel0.y + 3).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#38bdf8" font-size="9.5" font-weight="700">0℃(氷点)</text>
         </g>
       `;
     }

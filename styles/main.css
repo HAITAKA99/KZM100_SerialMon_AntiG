@@ -401,6 +401,7 @@ body {
   font-size: 9px;
   fill: var(--text-muted);
   text-anchor: middle;
+  dominant-baseline: central;
   font-family: var(--font-mono);
 }
 
@@ -416,13 +417,13 @@ body {
 .speed-arc-track {
   fill: none;
   stroke: #1e293b;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
 }
 
 .speed-arc-fill {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.4s ease;
 }
@@ -430,20 +431,20 @@ body {
 .speed-arc-mask {
   fill: none;
   stroke: #ffffff;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .speed-arc-seg {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: butt;
 }
 
 .speed-arc-error {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
 }
 
@@ -474,21 +475,21 @@ body {
 .temp-arc-track {
   fill: none;
   stroke: #1e293b;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
 }
 
 .temp-arc-mask {
   fill: none;
   stroke: #ffffff;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .temp-arc-seg {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: butt;
 }
 
