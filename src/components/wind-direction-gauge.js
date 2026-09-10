@@ -128,18 +128,18 @@ export class WindDirectionGauge {
     const ticks = [];
     const cx = 150;
     const cy = 150;
-    const rOuter = 134;
+    const rInner = 134;
 
     for (let deg = 0; deg < 360; deg += 10) {
       const isMajor = deg % 30 === 0;
-      const tickLength = isMajor ? 10 : 5;
-      const rInner = rOuter - tickLength;
+      const tickLength = isMajor ? 8 : 4;
+      const rOuter = rInner + tickLength;
       const rad = ((deg - 90) * Math.PI) / 180;
 
-      const x1 = (cx + rOuter * Math.cos(rad)).toFixed(1);
-      const y1 = (cy + rOuter * Math.sin(rad)).toFixed(1);
-      const x2 = (cx + rInner * Math.cos(rad)).toFixed(1);
-      const y2 = (cy + rInner * Math.sin(rad)).toFixed(1);
+      const x1 = (cx + rInner * Math.cos(rad)).toFixed(1);
+      const y1 = (cy + rInner * Math.sin(rad)).toFixed(1);
+      const x2 = (cx + rOuter * Math.cos(rad)).toFixed(1);
+      const y2 = (cy + rOuter * Math.sin(rad)).toFixed(1);
 
       ticks.push(
         `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${isMajor ? '#617d98' : '#334e68'}" stroke-width="${isMajor ? 2 : 1}" />`

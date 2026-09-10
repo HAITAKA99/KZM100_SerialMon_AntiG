@@ -78,7 +78,7 @@ export class WindSpeedGauge {
 
             <!-- 針 -->
             <g id="speed-needle-group" style="transform-origin: 150px 170px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
-              <polygon points="146,170 154,170 151,45 149,45" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
+              <polygon points="146,170 154,170 151,50 149,50" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
               <circle cx="150" cy="170" r="8" fill="#1e293b" stroke="#00f0ff" stroke-width="2.5" />
             </g>
 
@@ -163,10 +163,9 @@ export class WindSpeedGauge {
   _drawTicks() {
     const cx = 150;
     const cy = 170;
-    const rOuter = 125;
-    const rInnerMajor = 115;
-    const rInnerMinor = 119;
-    const rText = 98;
+    const rInnerMajor = 120;
+    const rOuter = 126;
+    const rText = 135;
 
     const startAngle = -210;
     const totalAngle = 240; // -210 to 30
@@ -185,12 +184,12 @@ export class WindSpeedGauge {
       const angle = startAngle + fraction * totalAngle;
       const val = (max * fraction).toFixed(max === 5 ? 0 : 0);
 
-      const pOuter = this._polarToCartesian(cx, cy, rOuter, angle);
       const pInner = this._polarToCartesian(cx, cy, rInnerMajor, angle);
+      const pOuter = this._polarToCartesian(cx, cy, rOuter, angle);
       const pText = this._polarToCartesian(cx, cy, rText, angle);
 
-      html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="#64748b" stroke-width="2" />`;
-      html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" class="speed-tick-text">${val}</text>`;
+      html += `<line x1="${pInner.x.toFixed(1)}" y1="${pInner.y.toFixed(1)}" x2="${pOuter.x.toFixed(1)}" y2="${pOuter.y.toFixed(1)}" stroke="#64748b" stroke-width="2" />`;
+      html += `<text x="${pText.x.toFixed(1)}" y="${pText.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="speed-tick-text">${val}</text>`;
     }
 
     this.ticksGroup.innerHTML = html;
