@@ -243,7 +243,7 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   align-items: stretch;
-  flex: 1.25;
+  flex: none;
   min-height: 280px;
 }
 
@@ -265,9 +265,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  height: 100%;
-  flex: 1;
-  min-height: 280px;
+  height: 280px;
   position: relative;
   overflow: hidden;
 }
@@ -310,7 +308,7 @@ body {
   justify-content: center;
   position: relative;
   min-height: 180px;
-  max-height: 220px;
+  max-height: 200px;
 }
 
 .gauge-footer {
@@ -864,11 +862,12 @@ body {
     flex: none;
   }
   .gauge-card {
+    height: 280px;
     min-height: 280px;
   }
   .gauge-body {
     min-height: 180px;
-    max-height: 220px;
+    max-height: 200px;
   }
   .compass-svg, .speed-svg, .temp-svg {
     max-height: 200px;
@@ -932,6 +931,7 @@ body {
     min-height: 100vh;
   }
   .gauge-card {
+    height: 280px;
     min-height: 280px;
   }
   .chart-canvas-wrapper {
