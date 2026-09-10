@@ -51,40 +51,40 @@ export class WindDirectionGauge {
             </defs>
 
             <!-- 外枠サークル -->
-            <circle cx="150" cy="150" r="142" class="compass-outer-ring" />
-            <circle cx="150" cy="150" r="134" class="compass-inner-ring" />
+            <circle cx="150" cy="150" r="114" class="compass-outer-ring" />
+            <circle cx="150" cy="150" r="108" class="compass-inner-ring" />
 
             <!-- 目盛り線（30度ごと・10度ごと） -->
             <g class="compass-ticks">
               ${this._generateTicks()}
             </g>
 
-            <!-- 方位ラベル -->
+            <!-- 方位ラベル (外周に配置) -->
             <!-- 主要4方位 (大) -->
-            <text x="150" y="32" class="compass-label major-label label-n">N</text>
-            <text x="270" y="156" class="compass-label major-label label-e">E</text>
-            <text x="150" y="280" class="compass-label major-label label-s">S</text>
-            <text x="30" y="156" class="compass-label major-label label-w">W</text>
+            <text x="150" y="16" class="compass-label major-label label-n">N</text>
+            <text x="284" y="150" class="compass-label major-label label-e">E</text>
+            <text x="150" y="284" class="compass-label major-label label-s">S</text>
+            <text x="16" y="150" class="compass-label major-label label-w">W</text>
 
-            <!-- 4主方位 (中) -->
-            <text x="232" y="74" class="compass-label minor-label">NE</text>
-            <text x="232" y="238" class="compass-label minor-label">SE</text>
-            <text x="68" y="238" class="compass-label minor-label">SW</text>
-            <text x="68" y="74" class="compass-label minor-label">NW</text>
+            <!-- 4副方位 (中) -->
+            <text x="241" y="60" class="compass-label minor-label">NE</text>
+            <text x="241" y="241" class="compass-label minor-label">SE</text>
+            <text x="59" y="241" class="compass-label minor-label">SW</text>
+            <text x="59" y="60" class="compass-label minor-label">NW</text>
 
-            <!-- 角度ラベル (0, 90, 180, 270) -->
-            <text x="150" y="46" class="compass-deg-label">0°</text>
-            <text x="254" y="155" class="compass-deg-label">90°</text>
-            <text x="150" y="264" class="compass-deg-label">180°</text>
-            <text x="46" y="155" class="compass-deg-label">270°</text>
+            <!-- 角度ラベル (0°, 90°, 180°, 270°) -->
+            <text x="150" y="32" class="compass-deg-label">0°</text>
+            <text x="268" y="150" class="compass-deg-label">90°</text>
+            <text x="150" y="268" class="compass-deg-label">180°</text>
+            <text x="32" y="150" class="compass-deg-label">270°</text>
 
             <!-- シェブロン型（凹四角形）針 -->
             <!-- 中心 (150, 150) を軸に回転 -->
             <g id="compass-needle-group" style="transform-origin: 150px 150px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
-              <!-- 凹四角形（シェブロン）: 先端 (150, 24), 右翼端 (215, 230), 凹み底 (150, 190), 左翼端 (85, 230) -->
+              <!-- 凹四角形（シェブロン）: 先端 (150, 54), 右翼端 (200, 212), 凹み底 (150, 181), 左翼端 (100, 212) -->
               <polygon
                 id="compass-needle"
-                points="150,24 215,230 150,190 85,230"
+                points="150,54 200,212 150,181 100,212"
                 fill="url(#needleGrad)"
                 stroke="#ffffff"
                 stroke-width="2.5"
@@ -93,21 +93,23 @@ export class WindDirectionGauge {
               <!-- 針の中央分割線（立体感向上） -->
               <polygon
                 id="compass-needle-half"
-                points="150,24 215,230 150,190"
+                points="150,54 200,212 150,181"
                 fill="rgba(255, 255, 255, 0.2)"
               />
               <!-- 中心ピボット -->
-              <circle cx="150" cy="150" r="10" fill="#0b1329" stroke="#00f0ff" stroke-width="2.5" />
-              <circle cx="150" cy="150" r="4" fill="#ffffff" />
+              <circle cx="150" cy="150" r="8" fill="#0b1329" stroke="#00f0ff" stroke-width="2.5" />
+              <circle cx="150" cy="150" r="3" fill="#ffffff" />
             </g>
           </svg>
         </div>
 
         <div class="gauge-footer">
-          <div class="gauge-value-display">
-            <span class="value-number" id="dir-deg-text">---</span>
-            <span class="value-unit">°</span>
-            <span class="value-sub" id="dir-name-text">--</span>
+          <div class="gauge-value-display dir-value-display">
+            <div class="dir-main-val">
+              <span class="value-number" id="dir-deg-text">---</span>
+              <span class="value-unit">°</span>
+            </div>
+            <span class="value-sub dir-name-label" id="dir-name-text">--</span>
           </div>
         </div>
       </div>
@@ -128,11 +130,11 @@ export class WindDirectionGauge {
     const ticks = [];
     const cx = 150;
     const cy = 150;
-    const rOuter = 134;
+    const rOuter = 108;
 
     for (let deg = 0; deg < 360; deg += 10) {
       const isMajor = deg % 30 === 0;
-      const tickLength = isMajor ? 10 : 5;
+      const tickLength = isMajor ? 8 : 4;
       const rInner = rOuter - tickLength;
       const rad = ((deg - 90) * Math.PI) / 180;
 

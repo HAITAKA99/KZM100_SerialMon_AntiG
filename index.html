@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>かざみんリアルタイムモニター ver.0.1.5</title>
+  <title>かざみんリアルタイムモニター ver.0.1.6</title>
   <meta name="description" content="超音波風向風速計 かざみん (KZM100A/KZM100LR) Web Serial API リアルタイム計測モニター">
   <meta name="theme-color" content="#131f3d">
   <!-- PWA Manifest -->
@@ -368,6 +368,28 @@ body {
   font-weight: 600;
 }
 
+.dir-value-display {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  width: 100%;
+}
+
+.dir-main-val {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.dir-name-label {
+  position: absolute;
+  left: calc(50% + 36px);
+  white-space: nowrap;
+  margin-left: 0;
+}
+
 /* コンパス SVG */
 .compass-svg {
   height: 100%;
@@ -397,7 +419,8 @@ body {
 }
 
 .compass-label.major-label {
-  font-size: 16px;
+  font-size: 19px;
+  font-weight: 800;
   fill: #ffffff;
 }
 
@@ -406,14 +429,17 @@ body {
 }
 
 .compass-label.minor-label {
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 700;
   fill: var(--text-muted);
 }
 
 .compass-deg-label {
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: 600;
   fill: var(--text-muted);
   text-anchor: middle;
+  dominant-baseline: central;
   font-family: var(--font-mono);
 }
 
@@ -429,13 +455,13 @@ body {
 .speed-arc-track {
   fill: none;
   stroke: #1e293b;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
 }
 
 .speed-arc-fill {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.4s ease;
 }
@@ -443,26 +469,26 @@ body {
 .speed-arc-mask {
   fill: none;
   stroke: #ffffff;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .speed-arc-seg {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: butt;
 }
 
 .speed-arc-error {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
 }
 
 .speed-tick-text {
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
@@ -487,27 +513,27 @@ body {
 .temp-arc-track {
   fill: none;
   stroke: #1e293b;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
 }
 
 .temp-arc-mask {
   fill: none;
   stroke: #ffffff;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .temp-arc-seg {
   fill: none;
-  stroke-width: 18;
+  stroke-width: 16;
   stroke-linecap: butt;
 }
 
 .temp-tick-text {
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
@@ -518,11 +544,6 @@ body {
   fill: var(--text-muted);
   text-anchor: middle;
   font-family: var(--font-mono);
-}
-
-.temp-highlight-mark text {
-  font-family: var(--font-mono);
-  letter-spacing: -0.5px;
 }
 
 /* 中段: 時間軸グラフパネル */
@@ -986,7 +1007,7 @@ body {
         <svg class="header-logo" width="32" height="32" viewBox="0 0 562 562" aria-label="かざみん"><use href="#kazamin-icon" xlink:href="#kazamin-icon"/></svg>
         <h1 class="header-title">
           かざみんリアルタイムモニター
-          <span class="header-version">ver.0.1.5</span>
+          <span class="header-version">ver.0.1.6</span>
         </h1>
       </div>
 
@@ -2170,40 +2191,40 @@ class WindDirectionGauge {
             </defs>
 
             <!-- 外枠サークル -->
-            <circle cx="150" cy="150" r="142" class="compass-outer-ring" />
-            <circle cx="150" cy="150" r="134" class="compass-inner-ring" />
+            <circle cx="150" cy="150" r="114" class="compass-outer-ring" />
+            <circle cx="150" cy="150" r="108" class="compass-inner-ring" />
 
             <!-- 目盛り線（30度ごと・10度ごと） -->
             <g class="compass-ticks">
               ${this._generateTicks()}
             </g>
 
-            <!-- 方位ラベル -->
+            <!-- 方位ラベル (外周に配置) -->
             <!-- 主要4方位 (大) -->
-            <text x="150" y="32" class="compass-label major-label label-n">N</text>
-            <text x="270" y="156" class="compass-label major-label label-e">E</text>
-            <text x="150" y="280" class="compass-label major-label label-s">S</text>
-            <text x="30" y="156" class="compass-label major-label label-w">W</text>
+            <text x="150" y="16" class="compass-label major-label label-n">N</text>
+            <text x="284" y="150" class="compass-label major-label label-e">E</text>
+            <text x="150" y="284" class="compass-label major-label label-s">S</text>
+            <text x="16" y="150" class="compass-label major-label label-w">W</text>
 
-            <!-- 4主方位 (中) -->
-            <text x="232" y="74" class="compass-label minor-label">NE</text>
-            <text x="232" y="238" class="compass-label minor-label">SE</text>
-            <text x="68" y="238" class="compass-label minor-label">SW</text>
-            <text x="68" y="74" class="compass-label minor-label">NW</text>
+            <!-- 4副方位 (中) -->
+            <text x="241" y="60" class="compass-label minor-label">NE</text>
+            <text x="241" y="241" class="compass-label minor-label">SE</text>
+            <text x="59" y="241" class="compass-label minor-label">SW</text>
+            <text x="59" y="60" class="compass-label minor-label">NW</text>
 
-            <!-- 角度ラベル (0, 90, 180, 270) -->
-            <text x="150" y="46" class="compass-deg-label">0°</text>
-            <text x="254" y="155" class="compass-deg-label">90°</text>
-            <text x="150" y="264" class="compass-deg-label">180°</text>
-            <text x="46" y="155" class="compass-deg-label">270°</text>
+            <!-- 角度ラベル (0°, 90°, 180°, 270°) -->
+            <text x="150" y="32" class="compass-deg-label">0°</text>
+            <text x="268" y="150" class="compass-deg-label">90°</text>
+            <text x="150" y="268" class="compass-deg-label">180°</text>
+            <text x="32" y="150" class="compass-deg-label">270°</text>
 
             <!-- シェブロン型（凹四角形）針 -->
             <!-- 中心 (150, 150) を軸に回転 -->
             <g id="compass-needle-group" style="transform-origin: 150px 150px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
-              <!-- 凹四角形（シェブロン）: 先端 (150, 24), 右翼端 (215, 230), 凹み底 (150, 190), 左翼端 (85, 230) -->
+              <!-- 凹四角形（シェブロン）: 先端 (150, 54), 右翼端 (200, 212), 凹み底 (150, 181), 左翼端 (100, 212) -->
               <polygon
                 id="compass-needle"
-                points="150,24 215,230 150,190 85,230"
+                points="150,54 200,212 150,181 100,212"
                 fill="url(#needleGrad)"
                 stroke="#ffffff"
                 stroke-width="2.5"
@@ -2212,21 +2233,23 @@ class WindDirectionGauge {
               <!-- 針の中央分割線（立体感向上） -->
               <polygon
                 id="compass-needle-half"
-                points="150,24 215,230 150,190"
+                points="150,54 200,212 150,181"
                 fill="rgba(255, 255, 255, 0.2)"
               />
               <!-- 中心ピボット -->
-              <circle cx="150" cy="150" r="10" fill="#0b1329" stroke="#00f0ff" stroke-width="2.5" />
-              <circle cx="150" cy="150" r="4" fill="#ffffff" />
+              <circle cx="150" cy="150" r="8" fill="#0b1329" stroke="#00f0ff" stroke-width="2.5" />
+              <circle cx="150" cy="150" r="3" fill="#ffffff" />
             </g>
           </svg>
         </div>
 
         <div class="gauge-footer">
-          <div class="gauge-value-display">
-            <span class="value-number" id="dir-deg-text">---</span>
-            <span class="value-unit">°</span>
-            <span class="value-sub" id="dir-name-text">--</span>
+          <div class="gauge-value-display dir-value-display">
+            <div class="dir-main-val">
+              <span class="value-number" id="dir-deg-text">---</span>
+              <span class="value-unit">°</span>
+            </div>
+            <span class="value-sub dir-name-label" id="dir-name-text">--</span>
           </div>
         </div>
       </div>
@@ -2247,11 +2270,11 @@ class WindDirectionGauge {
     const ticks = [];
     const cx = 150;
     const cy = 150;
-    const rOuter = 134;
+    const rOuter = 108;
 
     for (let deg = 0; deg < 360; deg += 10) {
       const isMajor = deg % 30 === 0;
-      const tickLength = isMajor ? 10 : 5;
+      const tickLength = isMajor ? 8 : 4;
       const rInner = rOuter - tickLength;
       const rad = ((deg - 90) * Math.PI) / 180;
 
@@ -2370,19 +2393,19 @@ class WindSpeedGauge {
           <svg class="speed-svg" viewBox="0 0 300 240" width="100%" height="100%">
             <defs>
               <!-- 速度バーの4セグメント固定グラデーション（円弧の接線方向に沿って固定） -->
-              <linearGradient id="speedGrad1" x1="55" y1="225" x2="55" y2="115" gradientUnits="userSpaceOnUse">
+              <linearGradient id="speedGrad1" x1="63" y1="210" x2="63" y2="110" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#00f0ff" />
                 <stop offset="100%" stop-color="#10b981" />
               </linearGradient>
-              <linearGradient id="speedGrad2" x1="55" y1="115" x2="150" y2="60" gradientUnits="userSpaceOnUse">
+              <linearGradient id="speedGrad2" x1="63" y1="110" x2="150" y2="60" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#10b981" />
                 <stop offset="100%" stop-color="#22c55e" />
               </linearGradient>
-              <linearGradient id="speedGrad3" x1="150" y1="60" x2="245" y2="115" gradientUnits="userSpaceOnUse">
+              <linearGradient id="speedGrad3" x1="150" y1="60" x2="237" y2="110" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#22c55e" />
                 <stop offset="100%" stop-color="#eab308" />
               </linearGradient>
-              <linearGradient id="speedGrad4" x1="245" y1="115" x2="245" y2="225" gradientUnits="userSpaceOnUse">
+              <linearGradient id="speedGrad4" x1="237" y1="110" x2="237" y2="210" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#eab308" />
                 <stop offset="100%" stop-color="#ef4444" />
               </linearGradient>
@@ -2415,13 +2438,13 @@ class WindSpeedGauge {
             <g id="speed-ticks"></g>
 
             <!-- 針 -->
-            <g id="speed-needle-group" style="transform-origin: 150px 170px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
-              <polygon points="146,170 154,170 151,45 149,45" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
-              <circle cx="150" cy="170" r="8" fill="#1e293b" stroke="#00f0ff" stroke-width="2.5" />
+            <g id="speed-needle-group" style="transform-origin: 150px 160px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
+              <polygon points="146,160 154,160 151,56 149,56" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
+              <circle cx="150" cy="160" r="8" fill="#1e293b" stroke="#00f0ff" stroke-width="2.5" />
             </g>
 
             <!-- スケール表示 -->
-            <text x="150" y="210" class="speed-scale-indicator" id="speed-scale-text">SCALE: 0 - 10 m/s</text>
+            <text x="150" y="202" class="speed-scale-indicator" id="speed-scale-text">SCALE: 0 - 10 m/s</text>
           </svg>
         </div>
 
@@ -2453,7 +2476,7 @@ class WindSpeedGauge {
   }
 
   /**
-   * 円弧のパス（中心: 150, 170, 半径: 110, 開始角: -210°, 終了角: 30°）
+   * 円弧のパス（中心: 150, 160, 半径: 100, 開始角: -210°, 終了角: 30°）
    * @private
    */
   _polarToCartesian(cx, cy, r, angleDeg) {
@@ -2472,18 +2495,18 @@ class WindSpeedGauge {
   }
 
   _setupArc() {
-    const fullArc = this._describeArc(150, 170, 110, -210, 30);
+    const fullArc = this._describeArc(150, 160, 100, -210, 30);
     this.trackBg.setAttribute('d', fullArc);
 
     // 4セグメント（各60度）のパスを設定してグラデーションを全域固定
-    this.seg1.setAttribute('d', this._describeArc(150, 170, 110, -210, -150));
-    this.seg2.setAttribute('d', this._describeArc(150, 170, 110, -150, -90));
-    this.seg3.setAttribute('d', this._describeArc(150, 170, 110, -90, -30));
-    this.seg4.setAttribute('d', this._describeArc(150, 170, 110, -30, 30));
+    this.seg1.setAttribute('d', this._describeArc(150, 160, 100, -210, -150));
+    this.seg2.setAttribute('d', this._describeArc(150, 160, 100, -150, -90));
+    this.seg3.setAttribute('d', this._describeArc(150, 160, 100, -90, -30));
+    this.seg4.setAttribute('d', this._describeArc(150, 160, 100, -30, 30));
 
     // マスク円弧の初期設定
     this.maskArc.setAttribute('d', fullArc);
-    this.arcLength = (this.maskArc.getTotalLength && this.maskArc.getTotalLength()) || 460.77;
+    this.arcLength = (this.maskArc.getTotalLength && this.maskArc.getTotalLength()) || 418.88;
     this.maskArc.style.strokeDasharray = `${this.arcLength} ${this.arcLength}`;
     this.maskArc.style.strokeDashoffset = `${this.arcLength}`;
 
@@ -2500,11 +2523,10 @@ class WindSpeedGauge {
    */
   _drawTicks() {
     const cx = 150;
-    const cy = 170;
-    const rOuter = 125;
-    const rInnerMajor = 115;
-    const rInnerMinor = 119;
-    const rText = 98;
+    const cy = 160;
+    const rOuter = 118;
+    const rInnerMajor = 108;
+    const rText = 132;
 
     const startAngle = -210;
     const totalAngle = 240; // -210 to 30
@@ -2528,7 +2550,7 @@ class WindSpeedGauge {
       const pText = this._polarToCartesian(cx, cy, rText, angle);
 
       html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="#64748b" stroke-width="2" />`;
-      html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" class="speed-tick-text">${val}</text>`;
+      html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="speed-tick-text">${val}</text>`;
     }
 
     this.ticksGroup.innerHTML = html;
@@ -2652,19 +2674,19 @@ class TemperatureGauge {
           <svg class="temp-svg" viewBox="0 0 300 240" width="100%" height="100%">
             <defs>
               <!-- 温度バーの4セグメント固定グラデーション（低温青〜水色〜適温緑〜黄〜赤） -->
-              <linearGradient id="tempGrad1" x1="55" y1="225" x2="55" y2="115" gradientUnits="userSpaceOnUse">
+              <linearGradient id="tempGrad1" x1="63" y1="210" x2="63" y2="110" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#0284c7" />
                 <stop offset="100%" stop-color="#38bdf8" />
               </linearGradient>
-              <linearGradient id="tempGrad2" x1="55" y1="115" x2="150" y2="60" gradientUnits="userSpaceOnUse">
+              <linearGradient id="tempGrad2" x1="63" y1="110" x2="150" y2="60" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#38bdf8" />
                 <stop offset="100%" stop-color="#22c55e" />
               </linearGradient>
-              <linearGradient id="tempGrad3" x1="150" y1="60" x2="245" y2="115" gradientUnits="userSpaceOnUse">
+              <linearGradient id="tempGrad3" x1="150" y1="60" x2="237" y2="110" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#22c55e" />
                 <stop offset="100%" stop-color="#eab308" />
               </linearGradient>
-              <linearGradient id="tempGrad4" x1="245" y1="115" x2="245" y2="225" gradientUnits="userSpaceOnUse">
+              <linearGradient id="tempGrad4" x1="237" y1="110" x2="237" y2="210" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#eab308" />
                 <stop offset="100%" stop-color="#ef4444" />
               </linearGradient>
@@ -2690,13 +2712,13 @@ class TemperatureGauge {
             <g id="temp-ticks"></g>
 
             <!-- 針 -->
-            <g id="temp-needle-group" style="transform-origin: 150px 170px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
-              <polygon points="146,170 154,170 151,45 149,45" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
-              <circle cx="150" cy="170" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5" />
+            <g id="temp-needle-group" style="transform-origin: 150px 160px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
+              <polygon points="146,160 154,160 151,56 149,56" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"/>
+              <circle cx="150" cy="160" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5" />
             </g>
 
             <!-- スケール表示 -->
-            <text x="150" y="210" class="temp-scale-indicator" id="temp-scale-text">SCALE: -10 ~ +50 ℃</text>
+            <text x="150" y="202" class="temp-scale-indicator" id="temp-scale-text">SCALE: -10 ~ +50 ℃</text>
           </svg>
         </div>
 
@@ -2749,18 +2771,18 @@ class TemperatureGauge {
   }
 
   _setupArc() {
-    const fullArc = this._describeArc(150, 170, 110, -210, 30);
+    const fullArc = this._describeArc(150, 160, 100, -210, 30);
     this.trackBg.setAttribute('d', fullArc);
 
     // 4セグメント（各60度）のパスを設定してグラデーションを全域固定
-    this.seg1.setAttribute('d', this._describeArc(150, 170, 110, -210, -150));
-    this.seg2.setAttribute('d', this._describeArc(150, 170, 110, -150, -90));
-    this.seg3.setAttribute('d', this._describeArc(150, 170, 110, -90, -30));
-    this.seg4.setAttribute('d', this._describeArc(150, 170, 110, -30, 30));
+    this.seg1.setAttribute('d', this._describeArc(150, 160, 100, -210, -150));
+    this.seg2.setAttribute('d', this._describeArc(150, 160, 100, -150, -90));
+    this.seg3.setAttribute('d', this._describeArc(150, 160, 100, -90, -30));
+    this.seg4.setAttribute('d', this._describeArc(150, 160, 100, -30, 30));
 
     // マスク円弧の初期設定
     this.maskArc.setAttribute('d', fullArc);
-    this.arcLength = (this.maskArc.getTotalLength && this.maskArc.getTotalLength()) || 460.77;
+    this.arcLength = (this.maskArc.getTotalLength && this.maskArc.getTotalLength()) || 418.88;
     this.maskArc.style.strokeDasharray = `${this.arcLength} ${this.arcLength}`;
     this.maskArc.style.strokeDashoffset = `${this.arcLength}`;
   }
@@ -2780,12 +2802,11 @@ class TemperatureGauge {
    */
   _drawTicks() {
     const cx = 150;
-    const cy = 170;
-    const rOuter = 125;
-    const rInnerMajor = 115;
-    const rInnerMinor = 119;
-    const rText = 98;
-    const rHighlightText = 74;
+    const cy = 160;
+    const rOuter = 118;
+    const rInnerMajor = 108;
+    const rOuterMinor = 114;
+    const rText = 132;
 
     let html = '';
 
@@ -2817,8 +2838,8 @@ class TemperatureGauge {
     // 小目盛りの描画
     minorValues.forEach((val) => {
       const angle = this._tempToAngle(val);
-      const pOuter = this._polarToCartesian(cx, cy, rOuter - 3, angle);
-      const pInner = this._polarToCartesian(cx, cy, rInnerMinor, angle);
+      const pOuter = this._polarToCartesian(cx, cy, rOuterMinor, angle);
+      const pInner = this._polarToCartesian(cx, cy, rInnerMajor, angle);
       html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="#475569" stroke-width="1.2" />`;
     });
 
@@ -2826,47 +2847,29 @@ class TemperatureGauge {
     tickValues.forEach((val) => {
       const angle = this._tempToAngle(val);
       const isFreeze = val === 0;
-      const strokeColor = isFreeze ? '#38bdf8' : '#64748b';
-      const strokeW = isFreeze ? '2.5' : '2';
-      const textColor = isFreeze ? 'var(--accent-blue)' : 'var(--text-secondary)';
-      const fontWeight = isFreeze ? 'bold' : 'normal';
+      const strokeColor = isFreeze ? '#00f0ff' : '#64748b';
+      const strokeW = isFreeze ? '3' : '2';
+      const textColor = isFreeze ? '#00f0ff' : 'var(--text-secondary)';
+      const fontWeight = isFreeze ? '800' : '600';
 
-      const pOuter = this._polarToCartesian(cx, cy, rOuter, angle);
-      const pInner = this._polarToCartesian(cx, cy, rInnerMajor, angle);
+      // 0℃は円の内側まで突き抜ける形状（r=86〜120）
+      const pOuter = this._polarToCartesian(cx, cy, isFreeze ? 120 : rOuter, angle);
+      const pInner = this._polarToCartesian(cx, cy, isFreeze ? 86 : rInnerMajor, angle);
       const pText = this._polarToCartesian(cx, cy, rText, angle);
 
-      html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="${strokeColor}" stroke-width="${strokeW}" />`;
-      html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" class="temp-tick-text" style="fill: ${textColor}; font-weight: ${fontWeight};">${val}</text>`;
+      html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="${strokeColor}" stroke-width="${strokeW}" ${isFreeze ? 'stroke-linecap="round"' : ''} />`;
+      html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="temp-tick-text" style="fill: ${textColor}; font-weight: ${fontWeight};">${val}</text>`;
     });
 
-    // 25℃（適温）の特別目盛り
+    // 25℃（適温）の特別目盛り: 円の内側まで突き抜ける形状（r=86〜120）
     if (min <= 25 && 25 <= max) {
       const angle25 = this._tempToAngle(25);
-      const pOuter25 = this._polarToCartesian(cx, cy, rOuter, angle25);
-      const pInner25 = this._polarToCartesian(cx, cy, rInnerMajor, angle25);
+      const pOuter25 = this._polarToCartesian(cx, cy, 120, angle25);
+      const pInner25 = this._polarToCartesian(cx, cy, 86, angle25);
       const pText25 = this._polarToCartesian(cx, cy, rText, angle25);
 
-      html += `<line x1="${pOuter25.x.toFixed(1)}" y1="${pOuter25.y.toFixed(1)}" x2="${pInner25.x.toFixed(1)}" y2="${pInner25.y.toFixed(1)}" stroke="#22c55e" stroke-width="2.5" />`;
-      html += `<text x="${pText25.x.toFixed(1)}" y="${(pText25.y + 4).toFixed(1)}" text-anchor="middle" class="temp-tick-text" style="fill: var(--accent-green); font-weight: bold;">25</text>`;
-
-      // 25℃(適温) テキストラベル
-      const pLabel25 = this._polarToCartesian(cx, cy, rHighlightText, angle25);
-      html += `
-        <g class="temp-highlight-mark">
-          <text x="${pLabel25.x.toFixed(1)}" y="${(pLabel25.y + 3).toFixed(1)}" text-anchor="middle" fill="#22c55e" font-size="9.5" font-weight="700">25℃(適温)</text>
-        </g>
-      `;
-    }
-
-    // 0℃（氷点）の特別テキストラベル
-    if (min <= 0 && 0 <= max) {
-      const angle0 = this._tempToAngle(0);
-      const pLabel0 = this._polarToCartesian(cx, cy, rHighlightText, angle0);
-      html += `
-        <g class="temp-highlight-mark">
-          <text x="${pLabel0.x.toFixed(1)}" y="${(pLabel0.y + 3).toFixed(1)}" text-anchor="middle" fill="#38bdf8" font-size="9.5" font-weight="700">0℃(氷点)</text>
-        </g>
-      `;
+      html += `<line x1="${pOuter25.x.toFixed(1)}" y1="${pOuter25.y.toFixed(1)}" x2="${pInner25.x.toFixed(1)}" y2="${pInner25.y.toFixed(1)}" stroke="#22c55e" stroke-width="3" stroke-linecap="round" />`;
+      html += `<text x="${pText25.x.toFixed(1)}" y="${(pText25.y + 4).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="temp-tick-text" style="fill: #22c55e; font-weight: 800;">25</text>`;
     }
 
     this.ticksGroup.innerHTML = html;
@@ -3796,7 +3799,7 @@ class App {
   }
 
   async init() {
-    console.log('かざみんリアルタイムモニター ver.0.1.5 起動中...');
+    console.log('かざみんリアルタイムモニター ver.0.1.6 起動中...');
 
     // 1. IndexedDB 初期化
     try {
