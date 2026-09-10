@@ -104,10 +104,12 @@ export class WindDirectionGauge {
         </div>
 
         <div class="gauge-footer">
-          <div class="gauge-value-display">
-            <span class="value-number" id="dir-deg-text">---</span>
-            <span class="value-unit">°</span>
-            <span class="value-sub" id="dir-name-text">--</span>
+          <div class="gauge-value-display dir-value-display">
+            <div class="dir-main-val">
+              <span class="value-number" id="dir-deg-text">---</span>
+              <span class="value-unit">°</span>
+            </div>
+            <span class="value-sub dir-name-label" id="dir-name-text">--</span>
           </div>
         </div>
       </div>

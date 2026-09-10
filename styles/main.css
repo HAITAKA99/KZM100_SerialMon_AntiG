@@ -355,6 +355,28 @@ body {
   font-weight: 600;
 }
 
+.dir-value-display {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  width: 100%;
+}
+
+.dir-main-val {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.dir-name-label {
+  position: absolute;
+  left: calc(50% + 36px);
+  white-space: nowrap;
+  margin-left: 0;
+}
+
 /* コンパス SVG */
 .compass-svg {
   height: 100%;
@@ -384,7 +406,8 @@ body {
 }
 
 .compass-label.major-label {
-  font-size: 16px;
+  font-size: 19px;
+  font-weight: 800;
   fill: #ffffff;
 }
 
@@ -393,12 +416,14 @@ body {
 }
 
 .compass-label.minor-label {
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 700;
   fill: var(--text-muted);
 }
 
 .compass-deg-label {
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: 600;
   fill: var(--text-muted);
   text-anchor: middle;
   dominant-baseline: central;
@@ -449,8 +474,8 @@ body {
 }
 
 .speed-tick-text {
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
@@ -494,8 +519,8 @@ body {
 }
 
 .temp-tick-text {
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
@@ -506,11 +531,6 @@ body {
   fill: var(--text-muted);
   text-anchor: middle;
   font-family: var(--font-mono);
-}
-
-.temp-highlight-mark text {
-  font-family: var(--font-mono);
-  letter-spacing: -0.5px;
 }
 
 /* 中段: 時間軸グラフパネル */

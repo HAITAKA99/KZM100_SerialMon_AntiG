@@ -368,6 +368,28 @@ body {
   font-weight: 600;
 }
 
+.dir-value-display {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  width: 100%;
+}
+
+.dir-main-val {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.dir-name-label {
+  position: absolute;
+  left: calc(50% + 36px);
+  white-space: nowrap;
+  margin-left: 0;
+}
+
 /* コンパス SVG */
 .compass-svg {
   height: 100%;
@@ -397,7 +419,8 @@ body {
 }
 
 .compass-label.major-label {
-  font-size: 16px;
+  font-size: 19px;
+  font-weight: 800;
   fill: #ffffff;
 }
 
@@ -406,12 +429,14 @@ body {
 }
 
 .compass-label.minor-label {
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 700;
   fill: var(--text-muted);
 }
 
 .compass-deg-label {
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: 600;
   fill: var(--text-muted);
   text-anchor: middle;
   dominant-baseline: central;
@@ -462,8 +487,8 @@ body {
 }
 
 .speed-tick-text {
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
@@ -507,8 +532,8 @@ body {
 }
 
 .temp-tick-text {
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   fill: var(--text-secondary);
   font-family: var(--font-mono);
 }
@@ -519,11 +544,6 @@ body {
   fill: var(--text-muted);
   text-anchor: middle;
   font-family: var(--font-mono);
-}
-
-.temp-highlight-mark text {
-  font-family: var(--font-mono);
-  letter-spacing: -0.5px;
 }
 
 /* 中段: 時間軸グラフパネル */
@@ -2224,10 +2244,12 @@ class WindDirectionGauge {
         </div>
 
         <div class="gauge-footer">
-          <div class="gauge-value-display">
-            <span class="value-number" id="dir-deg-text">---</span>
-            <span class="value-unit">°</span>
-            <span class="value-sub" id="dir-name-text">--</span>
+          <div class="gauge-value-display dir-value-display">
+            <div class="dir-main-val">
+              <span class="value-number" id="dir-deg-text">---</span>
+              <span class="value-unit">°</span>
+            </div>
+            <span class="value-sub dir-name-label" id="dir-name-text">--</span>
           </div>
         </div>
       </div>
@@ -2785,7 +2807,6 @@ class TemperatureGauge {
     const rInnerMajor = 108;
     const rOuterMinor = 114;
     const rText = 132;
-    const rHighlightText = 68;
 
     let html = '';
 
@@ -2826,47 +2847,29 @@ class TemperatureGauge {
     tickValues.forEach((val) => {
       const angle = this._tempToAngle(val);
       const isFreeze = val === 0;
-      const strokeColor = isFreeze ? '#38bdf8' : '#64748b';
-      const strokeW = isFreeze ? '2.5' : '2';
-      const textColor = isFreeze ? 'var(--accent-blue)' : 'var(--text-secondary)';
-      const fontWeight = isFreeze ? 'bold' : 'normal';
+      const strokeColor = isFreeze ? '#00f0ff' : '#64748b';
+      const strokeW = isFreeze ? '3' : '2';
+      const textColor = isFreeze ? '#00f0ff' : 'var(--text-secondary)';
+      const fontWeight = isFreeze ? '800' : '600';
 
-      const pOuter = this._polarToCartesian(cx, cy, rOuter, angle);
-      const pInner = this._polarToCartesian(cx, cy, rInnerMajor, angle);
+      // 0℃は円の内側まで突き抜ける形状（r=86〜120）
+      const pOuter = this._polarToCartesian(cx, cy, isFreeze ? 120 : rOuter, angle);
+      const pInner = this._polarToCartesian(cx, cy, isFreeze ? 86 : rInnerMajor, angle);
       const pText = this._polarToCartesian(cx, cy, rText, angle);
 
-      html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="${strokeColor}" stroke-width="${strokeW}" />`;
+      html += `<line x1="${pOuter.x.toFixed(1)}" y1="${pOuter.y.toFixed(1)}" x2="${pInner.x.toFixed(1)}" y2="${pInner.y.toFixed(1)}" stroke="${strokeColor}" stroke-width="${strokeW}" ${isFreeze ? 'stroke-linecap="round"' : ''} />`;
       html += `<text x="${pText.x.toFixed(1)}" y="${(pText.y + 4).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="temp-tick-text" style="fill: ${textColor}; font-weight: ${fontWeight};">${val}</text>`;
     });
 
-    // 25℃（適温）の特別目盛り
+    // 25℃（適温）の特別目盛り: 円の内側まで突き抜ける形状（r=86〜120）
     if (min <= 25 && 25 <= max) {
       const angle25 = this._tempToAngle(25);
-      const pOuter25 = this._polarToCartesian(cx, cy, rOuter, angle25);
-      const pInner25 = this._polarToCartesian(cx, cy, rInnerMajor, angle25);
+      const pOuter25 = this._polarToCartesian(cx, cy, 120, angle25);
+      const pInner25 = this._polarToCartesian(cx, cy, 86, angle25);
       const pText25 = this._polarToCartesian(cx, cy, rText, angle25);
 
-      html += `<line x1="${pOuter25.x.toFixed(1)}" y1="${pOuter25.y.toFixed(1)}" x2="${pInner25.x.toFixed(1)}" y2="${pInner25.y.toFixed(1)}" stroke="#22c55e" stroke-width="2.5" />`;
-      html += `<text x="${pText25.x.toFixed(1)}" y="${(pText25.y + 4).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="temp-tick-text" style="fill: var(--accent-green); font-weight: bold;">25</text>`;
-
-      // 25℃(適温) テキストラベル
-      const pLabel25 = this._polarToCartesian(cx, cy, rHighlightText, angle25);
-      html += `
-        <g class="temp-highlight-mark">
-          <text x="${pLabel25.x.toFixed(1)}" y="${(pLabel25.y + 3).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#22c55e" font-size="9.5" font-weight="700">25℃(適温)</text>
-        </g>
-      `;
-    }
-
-    // 0℃（氷点）の特別テキストラベル
-    if (min <= 0 && 0 <= max) {
-      const angle0 = this._tempToAngle(0);
-      const pLabel0 = this._polarToCartesian(cx, cy, rHighlightText, angle0);
-      html += `
-        <g class="temp-highlight-mark">
-          <text x="${pLabel0.x.toFixed(1)}" y="${(pLabel0.y + 3).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#38bdf8" font-size="9.5" font-weight="700">0℃(氷点)</text>
-        </g>
-      `;
+      html += `<line x1="${pOuter25.x.toFixed(1)}" y1="${pOuter25.y.toFixed(1)}" x2="${pInner25.x.toFixed(1)}" y2="${pInner25.y.toFixed(1)}" stroke="#22c55e" stroke-width="3" stroke-linecap="round" />`;
+      html += `<text x="${pText25.x.toFixed(1)}" y="${(pText25.y + 4).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="temp-tick-text" style="fill: #22c55e; font-weight: 800;">25</text>`;
     }
 
     this.ticksGroup.innerHTML = html;
