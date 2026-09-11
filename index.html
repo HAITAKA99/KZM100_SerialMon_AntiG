@@ -3194,10 +3194,10 @@ class TimeSeriesChart {
     // 背景・グリッド・左右軸ラベル・凡例の描画
     this._drawUnifiedBackground(ctx, marginLeft, plotWidth, plotHeight, marginTop, plotBottom, tTemp, tSpeed, tDir, tSpeedMin, tSpeedMedian, tSpeedMax);
 
-    // データ描画 (1. 気温ライン, 2. 風速ライン, 3. 風向散布図)
+    // データ描画（レイヤー順: 最下位=気温, 2番目=風向, 最上位=風速）
     this._drawTemperaturePlot(ctx, tTemp, marginLeft, plotWidth, plotHeight, plotBottom);
-    this._drawSpeedPlot(ctx, tSpeed, tSpeedMin, tSpeedMedian, tSpeedMax, marginLeft, plotWidth, plotHeight, plotBottom);
     this._drawDirectionPlot(ctx, tDir, marginLeft, plotWidth, plotHeight, plotBottom);
+    this._drawSpeedPlot(ctx, tSpeed, tSpeedMin, tSpeedMedian, tSpeedMax, marginLeft, plotWidth, plotHeight, plotBottom);
 
     // 時間軸（横軸）の描画
     this._drawTimeAxis(ctx, marginLeft, plotWidth, plotBottom, marginTop);
