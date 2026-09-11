@@ -3226,13 +3226,13 @@ class TimeSeriesChart {
     const legendItems = isShortScale ? [
       { label: '気温 [℃]', color: tTemp.color, type: 'line' },
       { label: '風速 [m/s]', color: tSpeed.color, type: 'line' },
-      { label: '風向 [deg]', color: tDir.color, type: 'dot' }
+      { label: '風向 [deg]', color: tDir.color, type: 'diamond' }
     ] : [
       { label: '気温 [℃]', color: tTemp.color, type: 'line' },
       { label: '風速(最小) [m/s]', color: tSpeedMin.color, type: 'line', dash: tSpeedMin.dash },
       { label: '風速(中央) [m/s]', color: tSpeedMedian.color, type: 'line', dash: tSpeedMedian.dash },
       { label: '風速(最大) [m/s]', color: tSpeedMax.color, type: 'line', dash: tSpeedMax.dash },
-      { label: '風向 [deg]', color: tDir.color, type: 'dot' }
+      { label: '風向 [deg]', color: tDir.color, type: 'diamond' }
     ];
 
     const iconWidth = 14;
@@ -3275,10 +3275,16 @@ class TimeSeriesChart {
         ctx.lineTo(curX + iconWidth, legendY - 4);
         ctx.stroke();
         ctx.setLineDash([]);
-      } else if (item.type === 'dot') {
+      } else if (item.type === 'diamond' || item.type === 'dot') {
         ctx.fillStyle = item.color;
+        const cx = curX + iconWidth / 2;
+        const cy = legendY - 4;
         ctx.beginPath();
-        ctx.arc(curX + iconWidth / 2, legendY - 4, 3.5, 0, Math.PI * 2);
+        ctx.moveTo(cx, cy - 3.5);
+        ctx.lineTo(cx + 2.5, cy);
+        ctx.lineTo(cx, cy + 3.5);
+        ctx.lineTo(cx - 2.5, cy);
+        ctx.closePath();
         ctx.fill();
       }
 
@@ -3502,24 +3508,35 @@ class TimeSeriesChart {
   }
 
   /**
-   * 風向プロットの描画（点プロット / 散布図、ラインで繋がない）
+   * 風向プロットの描画（縦長ひし形プロット / 散布図、ラインで繋がない）
+   * 同一値が連続した際も横に連なって直線に見えず、必ず左右に隙間ができて点線に見えるよう、
+   * プロット形状を縦長ひし形とする（左右半幅は隣接間隔stepXの32%以下・上限1.0px、上下半高2.4px）。
    * @private
    */
   _drawDirectionPlot(ctx, tDir, marginLeft, plotWidth, plotHeight, plotBottom) {
     ctx.fillStyle = tDir.color;
-    const dotRadius = 1.8;
+    const stepX = plotWidth / (PLOT_COUNT - 1);
+    // 左右に必ず隙間ができるよう、半幅は隣接間隔の32%（最大1.0px）に制限
+    const rx = Math.min(1.0, stepX * 0.32);
+    // 見やすい大きさを維持するため、上下方向の半高は 2.4px（全高 4.8px）
+    const ry = 2.4;
 
+    ctx.beginPath();
     for (let i = 0; i < PLOT_COUNT - 1; i++) {
       const p = this.plotData[i];
       if (p && p.direction !== null && !p.isError) {
         const x = this._getX(i, marginLeft, plotWidth);
         const ratio = Math.max(0, Math.min(1, p.direction / 359));
         const y = plotBottom - ratio * plotHeight;
-        ctx.beginPath();
-        ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-        ctx.fill();
+        
+        ctx.moveTo(x, y - ry);
+        ctx.lineTo(x + rx, y);
+        ctx.lineTo(x, y + ry);
+        ctx.lineTo(x - rx, y);
+        ctx.closePath();
       }
     }
+    ctx.fill();
 
     // 最新値ポイントハイライト（右端の最新点は常に描画）
     const latest = this.plotData[PLOT_COUNT - 1];
