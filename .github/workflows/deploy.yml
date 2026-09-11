@@ -41,18 +41,7 @@ jobs:
               tag = tag.strip()
               if not tag:
                   continue
-              has_readme = False
-              branch_ref = tag
-              res = subprocess.run(['git', 'cat-file', '-e', f'{tag}:README.md'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-              if res.returncode == 0:
-                  has_readme = True
-              elif i == 0:
-                  res_main = subprocess.run(['git', 'cat-file', '-e', 'main:README.md'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                  if res_main.returncode == 0:
-                      has_readme = True
-                      branch_ref = 'main'
-
-              readme_html = f' <span class="readme-link">(<a href="https://github.com/{repo}/blob/{branch_ref}/README.md" target="_blank" rel="noopener noreferrer">README</a>)</span>' if has_readme else ''
+              readme_html = f' <span class="readme-link">(<a href="https://github.com/{repo}/blob/main/README.md" target="_blank" rel="noopener noreferrer">README</a>)</span>'
               latest_badge = ' <span class="badge-latest">最新</span>' if i == 0 else ''
               items.append(f'    <li><a href="./{tag}/">{tag}</a>{readme_html}{latest_badge}</li>')
 
@@ -146,26 +135,6 @@ jobs:
                 const repo = '{repo}';
                 const listEl = document.getElementById('version-list');
 
-                async function checkReadme(tagName, isLatest) {{
-                  try {{
-                    const res = await fetch(`https://raw.githubusercontent.com/${{repo}}/${{tagName}}/README.md`, {{ method: 'HEAD' }});
-                    if (res.ok) return `https://github.com/${{repo}}/blob/${{tagName}}/README.md`;
-                  }} catch (e) {{}}
-
-                  if (isLatest) {{
-                    try {{
-                      const resMain = await fetch(`https://raw.githubusercontent.com/${{repo}}/main/README.md`, {{ method: 'HEAD' }});
-                      if (resMain.ok) return `https://github.com/${{repo}}/blob/main/README.md`;
-                    }} catch (e) {{}}
-                  }}
-
-                  try {{
-                    const resLocal = await fetch(`./${{tagName}}/README.md`, {{ method: 'HEAD' }});
-                    if (resLocal.ok) return `./${{tagName}}/README.md`;
-                  }} catch (e) {{}}
-                  return null;
-                }}
-
                 try {{
                   const res = await fetch(`https://api.github.com/repos/${{repo}}/tags`);
                   if (!res.ok) return;
@@ -183,14 +152,11 @@ jobs:
                     verLink.textContent = tag.name;
                     li.appendChild(verLink);
 
-                    const readmeUrl = await checkReadme(tag.name, isLatest);
-                    if (readmeUrl) {{
-                      li.appendChild(document.createTextNode(' '));
-                      const readmeSpan = document.createElement('span');
-                      readmeSpan.className = 'readme-link';
-                      readmeSpan.innerHTML = `(<a href="${{readmeUrl}}" target="_blank" rel="noopener noreferrer">README</a>)`;
-                      li.appendChild(readmeSpan);
-                    }}
+                    li.appendChild(document.createTextNode(' '));
+                    const readmeSpan = document.createElement('span');
+                    readmeSpan.className = 'readme-link';
+                    readmeSpan.innerHTML = `(<a href="https://github.com/${{repo}}/blob/main/README.md" target="_blank" rel="noopener noreferrer">README</a>)`;
+                    li.appendChild(readmeSpan);
 
                     if (isLatest) {{
                       const badge = document.createElement('span');
