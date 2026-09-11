@@ -22,6 +22,10 @@
 - 仕様は予告なく変更になる場合がございます。バグ等ございましたらご連絡ください。
 - 提供しておりますソフトウェアは全てサポート対象外となります。
 
+### ライセンス
+- **プログラムコード**: [MIT License](LICENSE) のもとで公開されています。
+- **アイコン・ロゴ素材**: `icons/` 配下のSVGファイルおよびロゴ等のグラフィック素材は **商用利用禁止（All Rights Reserved）** です。詳細は [LICENSE](LICENSE) をご確認ください。
+
 ------------------------------------------
 ## Kazamin Real-Time Monitor (KZM100A/KZM100LR)
 
@@ -52,5 +56,10 @@ this software does not work on Android smartphones or iPhones. If you do not own
 * The Kazamin unit must remain in its factory default settings. Please ensure the output interval is set to 1 s and the unit is set to m/s.
 * Specifications are subject to change without prior notice. If you encounter any bugs or issues, please contact us.
 * All provided software is offered without official technical support.
+
+### License
+
+- **Source Code:** Released under the [MIT License](LICENSE).
+- **Icons & Logos:** The SVG graphics in `icons/` and logo assets are **strictly excluded from the MIT License (Commercial Use Prohibited / All Rights Reserved)**. See [LICENSE](LICENSE) for details.
 
 [1]:https://developer.mozilla.org/ja/docs/Web/API/Web_Serial_API
