@@ -3,39 +3,144 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>かざみんリアルタイムモニター</title>
+  <title>かざみんシリーズソフトウェア</title>
+  <link rel="icon" type="image/svg+xml" href="./latest/icons/kazamin.svg">
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
-    .btn { display: inline-block; background: #0066cc; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 12px 0; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 8px 0; }
-    a { color: #0066cc; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+      color: #333333;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      color: #1a202c;
+    }
+    .lead {
+      color: #4a5568;
+      margin-top: 0;
+      margin-bottom: 1.75rem;
+    }
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: #2d3748;
+    }
+    ul.version-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 2rem 0;
+    }
+    ul.version-list li {
+      margin: 8px 0;
+      font-size: 1rem;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .badge-latest {
+      display: inline-block;
+      background: #28a745;
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+      line-height: 1.2;
+    }
+    .readme-link {
+      margin-left: 4px;
+    }
+    .footer-links {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e2e8f0;
+    }
   </style>
 </head>
 <body>
-  <h1>KZM100_SerialMon_AntiG</h1>
-  <p><a href="./latest/" class="btn">最新版を起動</a></p>
-  <h2>過去のバージョン</h2>
-  <ul id="tag-list">読み込み中...</ul>
+  <h1>かざみんシリーズソフトウェア</h1>
+  <p class="lead">こちらより、かざみんシリーズのソフトウェアをご利用いただけます。</p>
+
+  <h2>かざみんリアルタイムモニター(KZM100A/KZM100LR)</h2>
+  <ul id="version-list" class="version-list">
+    <li><a href="./ver.0.1.7/">ver.0.1.7</a> <span class="badge-latest">最新</span></li>
+    <li><a href="./ver.0.1.6/">ver.0.1.6</a></li>
+    <li><a href="./ver.0.1.5/">ver.0.1.5</a></li>
+    <li><a href="./ver.0.1.3/">ver.0.1.3</a></li>
+    <li><a href="./ver.0.1.2/">ver.0.1.2</a></li>
+    <li><a href="./ver.0.1.1/">ver.0.1.1</a></li>
+    <li><a href="./ver.0.1.0/">ver.0.1.0</a></li>
+  </ul>
+
+  <div class="footer-links">
+    <p><a href="https://kazamin.jp/" target="_blank" rel="noopener noreferrer">kazamin.jp へのリンク</a></p>
+  </div>
+
   <script>
-    fetch('https://api.github.com/repos/HAITAKA99/KZM100_SerialMon_AntiG/tags')
-      .then(res => res.json())
-      .then(tags => {
-        const ul = document.getElementById('tag-list');
-        ul.innerHTML = '';
-        if (!tags || tags.length === 0) {
-          ul.innerHTML = '<li>過去バージョンはありません</li>';
-          return;
-        }
-        tags.forEach(t => {
+    (async function() {
+      const repo = 'HAITAKA99/KZM100_SerialMon_AntiG';
+      const listEl = document.getElementById('version-list');
+
+      async function checkReadme(tagName) {
+        try {
+          const res = await fetch(`https://raw.githubusercontent.com/${repo}/${tagName}/README.md`, { method: 'HEAD' });
+          if (res.ok) return `https://github.com/${repo}/blob/${tagName}/README.md`;
+        } catch (e) {}
+        try {
+          const resLocal = await fetch(`./${tagName}/README.md`, { method: 'HEAD' });
+          if (resLocal.ok) return `./${tagName}/README.md`;
+        } catch (e) {}
+        return null;
+      }
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${repo}/tags`);
+        if (!res.ok) return;
+        const tags = await res.json();
+        if (!Array.isArray(tags) || tags.length === 0) return;
+
+        listEl.innerHTML = '';
+        for (let i = 0; i < tags.length; i++) {
+          const tag = tags[i];
           const li = document.createElement('li');
-          li.innerHTML = `<a href="./${t.name}/">${t.name} を開く</a>`;
-          ul.appendChild(li);
-        });
-      })
-      .catch(() => {
-        document.getElementById('tag-list').innerHTML = '<li>バージョン一覧の取得に失敗しました</li>';
-      });
+
+          const verLink = document.createElement('a');
+          verLink.href = `./${tag.name}/`;
+          verLink.textContent = tag.name;
+          li.appendChild(verLink);
+
+          const readmeUrl = await checkReadme(tag.name);
+          if (readmeUrl) {
+            li.appendChild(document.createTextNode(' '));
+            const readmeSpan = document.createElement('span');
+            readmeSpan.className = 'readme-link';
+            readmeSpan.innerHTML = `(<a href="${readmeUrl}" target="_blank" rel="noopener noreferrer">README</a>)`;
+            li.appendChild(readmeSpan);
+          }
+
+          if (i === 0) {
+            const badge = document.createElement('span');
+            badge.className = 'badge-latest';
+            badge.textContent = '最新';
+            li.appendChild(document.createTextNode(' '));
+            li.appendChild(badge);
+          }
+
+          listEl.appendChild(li);
+        }
+      } catch (err) {}
+    })();
   </script>
 </body>
 </html>
