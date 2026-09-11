@@ -807,7 +807,7 @@ body {
 .footer-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .footer-link {
@@ -840,7 +840,7 @@ body {
 .footer-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .btn-csv {
