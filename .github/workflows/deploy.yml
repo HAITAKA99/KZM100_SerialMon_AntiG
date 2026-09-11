@@ -30,7 +30,7 @@ jobs:
           python3 - << 'PYEOF'
           import subprocess, os
 
-          repo = os.environ.get('GITHUB_REPOSITORY', 'HAITAKA99/KZM100_SerialMon_AntiG')
+          repo = os.environ.get('GITHUB_REPOSITORY', 'HAITAKA99/kazamin')
           try:
               tags_output = subprocess.check_output(['git', 'tag', '--sort=-v:refname'], text=True).strip().splitlines()
           except Exception:
