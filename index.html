@@ -891,13 +891,14 @@ body {
     padding: 10px 12px;
     gap: 12px;
   }
-  .gauges-section {
-    grid-template-columns: 1fr;
-    flex: none;
-  }
   .gauge-card {
     height: 280px;
     min-height: 280px;
+    padding: 10px 10px;
+  }
+  .gauge-title {
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
   }
   .gauge-body {
     min-height: 180px;
@@ -924,6 +925,14 @@ body {
   }
   .console-body {
     height: 180px;
+    flex: none;
+  }
+}
+
+/* 横方向に余裕が無い場合（スマートフォン縦画面・狭画面）: 3連メーターを縦並びに配置 */
+@media (max-width: 600px) and (orientation: portrait), (max-width: 520px) {
+  .gauges-section {
+    grid-template-columns: 1fr;
     flex: none;
   }
 }
