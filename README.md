@@ -1,7 +1,7 @@
-# かざみんリアルタイムモニター(KZM100A/KZM100LR)
+## かざみんリアルタイムモニター(KZM100A/KZM100LR)
 
 ### 概要
-パソコン(Windows/Mac/Linux)で動作するブラウザーベースのリアルタイムモニタリングソフトです。同梱のUSBシリアル変換アダプタ経由で結線して使用します。[Web Serial API][1] の仕様制限により、Androidスマートフォン、iPhoneでは動作いたしません。
+パソコン(Windows/Mac/Linux)で動作するブラウザーベースのリアルタイムモニタリングソフトです。同梱のUSBシリアル変換アダプタ経由で結線して使用します。[Web Serial API][1] の仕様制限により、Androidスマートフォン、iPhoneでは動作いたしません。かざみん本体をお持ちでない場合はデモモードで表示機能をお試しいただけます。
 
 ### 動作環境
 - 対象デバイス: KZM100A/KZM100LR
@@ -22,12 +22,13 @@
 - 仕様は予告なく変更になる場合がございます。バグ等ございましたらご連絡ください。
 - 提供しておりますソフトウェアは全てサポート対象外となります。
 
---------------------------------------------------------------------
+------------------------------------------
 ## Kazamin Real-Time Monitor (KZM100A/KZM100LR)
 
 ### Overview
 
-A browser-based real-time monitoring software that runs on PCs (Windows / macOS / Linux). It connects via the included USB-to-serial adapter. Due to technical limitations of the [Web Serial API](https://www.google.com/search?q=%5Bhttps%3A%2F%2Fdeveloper.mozilla.org%2Fen-US%2Fdocs%2FWeb%2FAPI%2FWeb_Serial_API%5D%28https%3A%2F%2Fdeveloper.mozilla.org%2Fen-US%2Fdocs%2FWeb%2FAPI%2FWeb_Serial_API%29), this software does not work on Android smartphones or iPhones.
+A browser-based real-time monitoring software that runs on PCs (Windows / macOS / Linux). It connects via the included USB-to-serial adapter. Due to technical limitations of the [Web Serial API][1]
+this software does not work on Android smartphones or iPhones. If you do not own a Kazamin unit, you can test the display functions using Demo Mode.
 
 ### System Requirements
 
@@ -35,7 +36,7 @@ A browser-based real-time monitoring software that runs on PCs (Windows / macOS 
 * **Supported OS:** Windows / macOS / Linux
 * **Supported Browsers:** Chrome / Edge / Firefox / Opera
 * *Please use the latest version of your browser.*
-* *The browser must support JavaScript as well as the [Web Serial API](https://www.google.com/search?q=%5Bhttps%3A%2F%2Fdeveloper.mozilla.org%2Fen-US%2Fdocs%2FWeb%2FAPI%2FWeb_Serial_API%5D%28https%3A%2F%2Fdeveloper.mozilla.org%2Fen-US%2Fdocs%2FWeb%2FAPI%2FWeb_Serial_API%29).*
+* *The browser must support JavaScript as well as the [Web Serial API][1].*
 
 ### How to Use
 
@@ -51,6 +52,5 @@ A browser-based real-time monitoring software that runs on PCs (Windows / macOS 
 * The Kazamin unit must remain in its factory default settings. Please ensure the output interval is set to 1 s and the unit is set to m/s.
 * Specifications are subject to change without prior notice. If you encounter any bugs or issues, please contact us.
 * All provided software is offered without official technical support.
-
 
 [1]:https://developer.mozilla.org/ja/docs/Web/API/Web_Serial_API
