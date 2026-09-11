@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>かざみんリアルタイムモニター 利用者向けオンラインマニュアル</title>
+  <meta name="description" content="超音波風向風速計 かざみん (KZM100A / KZM100LR) Web Serial Monitor の公式利用者向けオンラインマニュアルです。">
+  <meta name="theme-color" content="#0b1329">
+  <style>
+    :root {
+      --bg-main: #0b1329;
+      --bg-panel: #131f3d;
+      --bg-panel-alt: #1a294f;
+      --bg-card: rgba(19, 31, 61, 0.85);
+      --bg-code: #070d1e;
+      --border-color: rgba(0, 240, 255, 0.2);
+      --border-focus: rgba(0, 240, 255, 0.6);
+      --text-main: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-cyan: #00f0ff;
+      --accent-blue: #0284c7;
+      --accent-green: #10b981;
+      --accent-yellow: #f59e0b;
+      --accent-red: #ef4444;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans JP', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 8px 24px rgba(0, 240, 255, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      scroll-behavior: smooth;
+    }
+
+    /* ヘッダー */
+    .manual-header {
+      background: linear-gradient(180deg, #131f3d 0%, #0b1329 100%);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #0284c7, #00f0ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #0b1329;
+      font-size: 1.2rem;
+    }
+
+    .header-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .header-badge {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+
+    .header-nav {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-back-app {
+      background: linear-gradient(135deg, #0284c7, #00f0ff);
+      color: #0b1329;
+      border: none;
+    }
+
+    .btn-back-app:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+    }
+
+    /* レイアウト構造 */
+    .manual-layout {
+      display: flex;
+      flex: 1;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+      gap: 2.5rem;
+    }
+
+    /* サイドバー (目次) */
+    .manual-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 5rem;
+      height: calc(100vh - 7rem);
+      overflow-y: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .manual-sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .manual-sidebar::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    .toc-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toc-item a {
+      display: block;
+      padding: 6px 10px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item a:hover {
+      color: #ffffff;
+      background: rgba(0, 240, 255, 0.1);
+      padding-left: 14px;
+    }
+
+    .toc-sublist {
+      list-style: none;
+      padding-left: 12px;
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toc-sublist a {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* メインコンテンツ */
+    .manual-content {
+      flex: 1;
+      min-width: 0;
+      max-width: 960px;
+    }
+
+    /* セクションスタイリング */
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-title {
+      font-size: 1.75rem;
+      color: #ffffff;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid rgba(0, 240, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 1.4em;
+      background: var(--accent-cyan);
+      border-radius: 3px;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      color: var(--accent-cyan);
+      margin: 1.75rem 0 0.75rem 0;
+    }
+
+    h4 {
+      font-size: 1.05rem;
+      color: #ffffff;
+      margin: 1.25rem 0 0.5rem 0;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--text-main);
+    }
+
+    /* 手順ステップ表示 */
+    .step-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin: 1.5rem 0;
+    }
+
+    .step-card {
+      display: flex;
+      gap: 1.25rem;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+      transition: border-color 0.2s;
+    }
+
+    .step-card:hover {
+      border-color: var(--border-focus);
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7, #00f0ff);
+      color: #0b1329;
+      font-weight: 800;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content h4 {
+      margin-top: 0;
+      color: #ffffff;
+      font-size: 1.1rem;
+    }
+
+    /* アラートボックス */
+    .alert-box {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .alert-info {
+      background: rgba(2, 132, 199, 0.15);
+      border: 1px solid rgba(2, 132, 199, 0.4);
+      color: #bae6fd;
+    }
+
+    .alert-tip {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #a7f3d0;
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+
+    .alert-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    /* テーブル */
+    .data-table-wrapper {
+      overflow-x: auto;
+      margin: 1.25rem 0;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--bg-panel-alt);
+      color: var(--accent-cyan);
+      padding: 10px 14px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--bg-panel);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(0, 240, 255, 0.03);
+    }
+
+    /* コード・キーボード表記 */
+    code {
+      font-family: var(--font-mono);
+      background: var(--bg-code);
+      color: var(--accent-cyan);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #e2e8f0;
+    }
+
+    /* 機能カードグリッド */
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin: 1.5rem 0;
+    }
+
+    .feature-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+
+    .feature-card h4 {
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 0;
+    }
+
+    /* Q&A アコーディオン風カード */
+    .faq-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .faq-q {
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .faq-q::before {
+      content: 'Q';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--accent-cyan);
+      color: #0b1329;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .faq-a {
+      color: var(--text-secondary);
+      padding-left: 32px;
+    }
+
+    /* フッター */
+    .manual-footer {
+      background: #080d1c;
+      border-top: 1px solid var(--border-color);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: auto;
+    }
+
+    .manual-footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    /* トップへ戻るボタン */
+    .btn-scroll-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--bg-panel-alt);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+      transition: all 0.2s;
+      z-index: 90;
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
+
+    .btn-scroll-top:hover {
+      background: var(--accent-cyan);
+      color: #0b1329;
+      transform: translateY(-3px);
+    }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 1024px) {
+      .manual-sidebar {
+        display: none;
+      }
+      .manual-layout {
+        padding: 1.25rem;
+      }
+      .section {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header class="manual-header">
+    <div class="header-left">
+      <div class="header-logo">K</div>
+      <div>
+        <span class="header-title">かざみんリアルタイムモニター</span>
+        <span class="header-badge">オンラインマニュアル</span>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="../index.html" class="btn-action btn-back-app">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        モニター画面を開く
+      </a>
+    </nav>
+  </header>
+
+  <!-- メインレイアウト -->
+  <div class="manual-layout">
+    
+    <!-- サイドバー (目次) -->
+    <aside class="manual-sidebar">
+      <div class="toc-title">目次 (Contents)</div>
+      <ul class="toc-list">
+        <li class="toc-item"><a href="#sec-intro">1. はじめに</a></li>
+        <li class="toc-item"><a href="#sec-env">2. 動作環境と準備</a></li>
+        <li class="toc-item"><a href="#sec-quickstart">3. クイックスタート (使い方)</a></li>
+        <li class="toc-item">
+          <a href="#sec-features">4. 画面・機能の詳細解説</a>
+          <ul class="toc-sublist">
+            <li><a href="#feat-header">ヘッダー・接続制御</a></li>
+            <li><a href="#feat-gauges">リアルタイムメーター群</a></li>
+            <li><a href="#feat-chart">統合時系列グラフ</a></li>
+            <li><a href="#feat-console">受信コンソール</a></li>
+            <li><a href="#feat-storage">データ保存とCSV出力</a></li>
+          </ul>
+        </li>
+        <li class="toc-item"><a href="#sec-tips">5. 便利な応用機能・Tips</a></li>
+        <li class="toc-item"><a href="#sec-faq">6. よくある質問・トラブル解決</a></li>
+        <li class="toc-item"><a href="#sec-spec">7. 通信・製品仕様</a></li>
+      </ul>
+    </aside>
+
+    <!-- メインコンテンツ -->
+    <main class="manual-content">
+
+      <!-- 1. はじめに -->
+      <section id="sec-intro" class="section">
+        <h2 class="section-title">1. はじめに</h2>
+        <p><strong>「かざみんリアルタイムモニター」</strong>は、超音波風向風速計「かざみん (KZM100A / KZM100LR)」で計測された風速・風向・気温データを、ウェブブラウザ上でリアルタイムに可視化・記録するためのWebアプリケーションです。</p>
+        
+        <div class="grid-cards">
+          <div class="feature-card">
+            <h4>⚡ インストール不要</h4>
+            <p>専用ソフトのインストールは不要です。ブラウザの <strong>Web Serial API</strong> を使用し、PCやスマホから直接シリアル通信を行います。</p>
+          </div>
+          <div class="feature-card">
+            <h4>📊 リッチなダッシュボード</h4>
+            <p>直感的なダイアルメーター（風向・風速・気温）と、過去7日間まで追尾できる統合時系列グラフを装備しています。</p>
+          </div>
+          <div class="feature-card">
+            <h4>💾 7日間データ自動保持 & CSV出力</h4>
+            <p>受信データはブラウザ内の IndexedDB に自動蓄積され、ワンクリックで Excel 対応の CSV ファイルとしてダウンロード可能です。</p>
+          </div>
+          <div class="feature-card">
+            <h4>🌐 オフライン・PWA対応</h4>
+            <p>Service Worker による PWA（Progressive Web App）に対応しており、山間部や電波の届かないオフライン環境でも動作します。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 動作環境と準備 -->
+      <section id="sec-env" class="section">
+        <h2 class="section-title">2. 動作環境と準備</h2>
+        
+        <h3>推奨動作環境</h3>
+        <p>ブラウザがシリアルポートと直接通信する <strong>Web Serial API</strong> をサポートしている必要があります。</p>
+        
+        <div class="data-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>プラットフォーム</th>
+                <th>対応ブラウザ</th>
+                <th>備考</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Windows / Mac / Linux / ChromeOS</strong></td>
+                <td>Google Chrome, Microsoft Edge, Opera, Brave</td>
+                <td>推奨。最新バージョンをご利用ください。</td>
+              </tr>
+              <tr>
+                <td><strong>Android</strong></td>
+                <td>Google Chrome (OTGケーブル経由)</td>
+                <td>USB-OTG 接続にてシリアル変換チップが認識可能。</td>
+              </tr>
+              <tr>
+                <td><strong>iOS / iPadOS (Safari)</strong></td>
+                <td>非対応 (Web Serial API 未サポート)</td>
+                <td>※デモモードの閲覧のみ可能です。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="alert-box alert-info">
+          <span class="alert-icon">ℹ️</span>
+          <div>
+            <strong>通信ポートの準備:</strong>
+            かざみんをPCにUSBシリアル変換ケーブル等で接続し、OSのデバイスマネージャーでCOMポート（Mac/Linuxでは <code>/dev/tty.*</code>）が正常に認識されていることをご確認ください。
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. クイックスタート -->
+      <section id="sec-quickstart" class="section">
+        <h2 class="section-title">3. クイックスタート (使い方)</h2>
+        <p>わずか3ステップで計測モニタリングを開始できます。</p>
+
+        <div class="step-container">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>かざみんを端末に接続</h4>
+              <p>超音波風向風速計「かざみん」の電源を入れ、USBシリアルケーブルでパソコンまたはAndroid端末に接続します。</p>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>ブラウザでモニター画面を開く</h4>
+              <p>Google Chrome または Microsoft Edge で本モニター（<code>index.html</code>）を開きます。</p>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>「接続」ボタンを押してポートを選択</h4>
+              <p>画面上部の <span style="background:linear-gradient(135deg,#0284c7,#00f0ff);color:#0b1329;padding:2px 8px;border-radius:4px;font-weight:700;">接続</span> ボタンをクリックします。ブラウザのポート選択ダイアログが表示されるので、かざみんが接続されているシリアルポート（例: <code>USB Serial Port (COM3)</code>）を選択して「接続」を押します。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-box alert-tip">
+          <span class="alert-icon">💡</span>
+          <div>
+            <strong>実機がない場合:</strong> 画面上部の <code>デモ</code> ボタンをクリックすると、仮想的な風速・風向・気温データを生成するシミュレータが起動し、すべての表示機能をお試しいただけます。
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 画面・機能の詳細解説 -->
+      <section id="sec-features" class="section">
+        <h2 class="section-title">4. 画面・機能の詳細解説</h2>
+
+        <!-- ヘッダー -->
+        <h3 id="feat-header">① ヘッダー・接続制御</h3>
+        <p>画面最上部にはシステムの稼働状況と操作ボタンが集約されています。</p>
+        <ul>
+          <li><strong>ステータスインジケーター:</strong>
+            <ul>
+              <li><span style="color:#64748b;">● 未接続</span>: シリアルポート未オープン状態</li>
+              <li><span style="color:#00f0ff;">● 接続中</span>: 正常にシリアル通信を受信中</li>
+              <li><span style="color:#f59e0b;">● デモ中</span>: 内部シミュレーター稼働中</li>
+            </ul>
+          </li>
+          <li><strong>接続 / 切断ボタン:</strong> シリアルポートのオープン／クローズを切り替えます。</li>
+          <li><strong>デモボタン:</strong> デモモードの開始・停止を切り替えます。</li>
+          <li><strong>デジタル時計:</strong> 現在時刻を24時間形式で正確に表示します。</li>
+        </ul>
+
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:2rem 0;">
+
+        <!-- リアルタイムメーター群 -->
+        <h3 id="feat-gauges">② リアルタイムメーター群</h3>
+        <p>最新1秒の測定値を直感的に把握できる3連メーターです。</p>
+
+        <div class="grid-cards">
+          <div class="feature-card">
+            <h4>🧭 風向メーター (Wind Direction)</h4>
+            <ul>
+              <li><strong>シェブロン型大型針:</strong> 風が吹いてくる方位を大きく明快に指し示します。</li>
+              <li><strong>最短回転補間:</strong> 350°から10°に変化する際も反対回りせず、最短角度でスムーズに回転します。</li>
+              <li><strong>16方位 + 角度表示:</strong> 北 (0°/N)、東 (90°/E)、南 (180°/S)、西 (270°/W) と詳細度数。</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <h4>💨 風速メーター (Wind Speed)</h4>
+            <ul>
+              <li><strong>ダイナミックスケール:</strong> グラフの選択スケール（5 / 10 / 20 / 30 m/s）と自動連動。</li>
+              <li><strong>カラーグラデーション:</strong> 微風（シアン・緑）から強風（黄・赤）へ視覚的に警告。</li>
+              <li><strong>デジタル数値:</strong> 小数点第1位（<code>0.0 m/s</code>）まで大型フォントで表示。</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <h4>🌡️ 温度計 (Temperature)</h4>
+            <ul>
+              <li><strong>重要温度マーカー:</strong> 氷点（0℃）と適温（25℃）の位置に専用インジケーターを配置。</li>
+              <li><strong>摂氏・華氏の併記:</strong> メインの摂氏（℃）に加えて華氏（°F）も自動計算して小さく表示。</li>
+              <li><strong>連動レンジ:</strong> 標準（-10〜+50℃）と広域（-20〜+65℃）をワンタッチ切替可能。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="alert-box alert-warning">
+          <span class="alert-icon">⚠️</span>
+          <div>
+            <strong>計測エラー表示（99.9 m/s）:</strong>
+            かざみんが超音波の乱れや障害物等で計測エラーを検知すると、風速 <code>99.9 m/s</code> が送信されます。本モニターはこれを自動検知し、メーターに <span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.8em;font-weight:700;">ERROR</span> バッジを表示して針を赤色警告状態にします。
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:2rem 0;">
+
+        <!-- 統合時系列グラフ -->
+        <h3 id="feat-chart">③ 統合時系列グラフ</h3>
+        <p>HTML5 高速 Canvas レンダリングにより、風速・風向・気温の3要素を1画面に統合してプロットします。</p>
+
+        <div class="data-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>系列名</th>
+                <th>チャート形式</th>
+                <th>対応軸</th>
+                <th>描画色</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>気温 (Temperature)</strong></td>
+                <td>滑らかなスプライン曲線</td>
+                <td>左側 Y軸 (℃)</td>
+                <td><span style="color:#38bdf8;">■ シアン / スカイブルー</span></td>
+              </tr>
+              <tr>
+                <td><strong>風速 (Wind Speed)</strong></td>
+                <td>滑らかなスプライン曲線</td>
+                <td>右側 外側Y軸 (m/s)</td>
+                <td><span style="color:#22c55e;">■ エメラルドグリーン</span></td>
+              </tr>
+              <tr>
+                <td><strong>風向 (Wind Direction)</strong></td>
+                <td>散布図 (ドットプロット)</td>
+                <td>右側 内側Y軸 (0〜360°)</td>
+                <td><span style="color:#eab308;">● ゴールド / アンバー</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>時間スケールとデータ集約ルール</h4>
+        <p>グラフ上のプロット点数は <strong>常に600点固定</strong> です。右端が最新の受信値、左に向かって過去データとなります。</p>
+        <ul>
+          <li><strong>10分間 (10m):</strong> 1秒ごとの生データを600秒分そのまま全プロット。</li>
+          <li><strong>1時間 (1h):</strong> 6秒間隔（6秒間の平均値を1点としてスクロール）。</li>
+          <li><strong>6時間 (6h):</strong> 36秒間隔（36秒間の平均値）。</li>
+          <li><strong>24時間 (24h):</strong> 144秒間隔（144秒間の平均値）。</li>
+          <li><strong>7日間 (7d):</strong> 1008秒間隔（1008秒間の平均値）。</li>
+        </ul>
+
+        <div class="alert-box alert-info">
+          <span class="alert-icon">📐</span>
+          <div>
+            <strong>科学的な平均化処理:</strong>
+            風向の平均化には単純な算術平均ではなく <strong>ベクトル平均（三角関数による角度合成）</strong> を採用しており、北（359°と1°）の境界付近でも正しい平均風向が算出されます。また、エラーデータ（99.9m/s）は平均化の母集団から自動除外されます。
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:2rem 0;">
+
+        <!-- 受信コンソール -->
+        <h3 id="feat-console">④ 受信コンソール</h3>
+        <p>かざみんから送られてくるテキストパケットをリアルタイムにログ表示します。</p>
+        <ul>
+          <li><strong>最新200件保持:</strong> メモリを圧迫しないよう最大200件のリングバッファで管理。</li>
+          <li><strong>等幅フォーマット:</strong> タイムスタンプ、風速、風向、気温、RAW文字列が綺麗に整列。</li>
+          <li><strong>自動スクロール:</strong> 新しいデータを受信するたびに最下部に自動追従（チェックボックスで解除可能）。</li>
+          <li><strong>エラーハイライト:</strong> エラーパケット行は赤色背景で強調されます。</li>
+        </ul>
+
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:2rem 0;">
+
+        <!-- データ保存とCSV出力 -->
+        <h3 id="feat-storage">⑤ データ保存とCSV出力</h3>
+        <p>測定データはブラウザ内のセキュアなデータベース（<strong>IndexedDB</strong>）にリアルタイムで自動保存されます。</p>
+
+        <h4>CSVエクスポート</h4>
+        <p>画面下部の <code>CSVダウンロード</code> ボタンを押すと、IndexedDB に蓄積されている全測定ログ（最大7日間分）がCSVファイルとして一括出力されます。</p>
+        <ul>
+          <li><strong>ファイル名:</strong> <code>kazamin_log_YYYYMMDD_HHMMSS.csv</code></li>
+          <li><strong>文字コード:</strong> <strong>BOM付き UTF-8</strong>（Microsoft Excel でそのまま開いても日本語が文字化けしません）</li>
+        </ul>
+
+        <h4>データ保持期間と自動パージ</h4>
+        <p>ブラウザのストレージ容量枯渇を防ぐため、<strong>7日以上経過した過去データは起動時および1時間ごとに自動消去</strong>されます。全データを手動でリセットしたい場合は「履歴クリア」ボタンを使用します。</p>
+      </section>
+
+      <!-- 5. 便利な応用機能・Tips -->
+      <section id="sec-tips" class="section">
+        <h2 class="section-title">5. 便利な応用機能・Tips</h2>
+
+        <div class="grid-cards">
+          <div class="feature-card">
+            <h4>🖥️ 複数台の「かざみん」同時監視</h4>
+            <p>ブラウザのタブを複数開くことで、ポートの異なる複数台のかざみんを1台のPCで同時にリアルタイムモニタリングできます。</p>
+          </div>
+
+          <div class="feature-card">
+            <h4>📱 PWA アプリとしてインストール</h4>
+            <p>ChromeやEdgeのURLバーにある「インストール」アイコンを押すと、デスクトップやスマホのホーム画面に専用アプリとして登録できます。</p>
+          </div>
+
+          <div class="feature-card">
+            <h4>🔗 URLパラメータによる自動デモ</h4>
+            <p>URLの末尾に <code>?demo=true</code> を付けて開くと、起動と同時に自動でデモモードが開始されます（展示やテストに便利です）。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. よくある質問・トラブル解決 -->
+      <section id="sec-faq" class="section">
+        <h2 class="section-title">6. よくある質問・トラブル解決</h2>
+
+        <div class="faq-card">
+          <div class="faq-q">「お使いのブラウザはWeb Serial APIに対応していません」と表示される</div>
+          <div class="faq-a">
+            Web Serial API に対応したブラウザ（Windows/Mac/Linux版の Google Chrome、Microsoft Edge、または Android版 Chrome）をご利用ください。iPhone / iPad（Safari）や Firefox はブラウザの仕様上シリアル通信に対応していません。
+          </div>
+        </div>
+
+        <div class="faq-card">
+          <div class="faq-q">「接続」を押してもポート選択一覧にかざみんが表示されない</div>
+          <div class="faq-a">
+            USBシリアルケーブルが正しく挿入されているか、またOSのシリアルドライバ（FTDI、CP210x、CH340など）がインストールされているかご確認ください。Windowsの場合はデバイスマネージャーの「ポート (COM と LPT)」を確認してください。
+          </div>
+        </div>
+
+        <div class="faq-card">
+          <div class="faq-q">接続できたがデータを受信しない（メーターが動かない）</div>
+          <div class="faq-a">
+            かざみん本体の電源が入っているか、配線（TX/RX）が正しく接続されているかご確認ください。また、他のシリアル通信ソフト（Tera Term 等）で既に同じCOMポートを開いていると排他制御により接続できません。他のソフトを終了してから再度お試しください。
+          </div>
+        </div>
+
+        <div class="faq-card">
+          <div class="faq-q">風速が「99.9 m/s」になり「ERROR」と表示される</div>
+          <div class="faq-a">
+            かざみんの超音波トランスデューサ間に雨滴、雪、虫、鳥などの異物が挟まっている場合や、極端な突風・超音波障害によって計測不能になると出力されます。センサーヘッド周辺の障害物を取り除いてください。
+          </div>
+        </div>
+
+        <div class="faq-card">
+          <div class="faq-q">PCを再起動したりブラウザを閉じるとデータは消えますか？</div>
+          <div class="faq-a">
+            データはブラウザの IndexedDB に永続保存されているため、ブラウザを閉じたりPCを再起動しても過去7日間のログは消えません。再度ページを開けばグラフも自動復元されます（ブラウザの「閲覧履歴とCookieの完全消去」を実行した場合を除く）。
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. 通信・製品仕様 -->
+      <section id="sec-spec" class="section">
+        <h2 class="section-title">7. 通信・製品仕様</h2>
+
+        <h3>シリアル通信仕様</h3>
+        <div class="data-table-wrapper">
+          <table>
+            <tbody>
+              <tr><th>通信規格</th><td>RS-232C / USBシリアル (Web Serial API)</td></tr>
+              <tr><th>ボーレート</th><td>9600 bps</td></tr>
+              <tr><th>データ長 / パリティ / ストップビット</th><td>8 bit / なし (None) / 1 bit (8N1)</td></tr>
+              <tr><th>フロー制御</th><td>なし (None)</td></tr>
+              <tr><th>出力周期</th><td>1.0 秒間隔 (固定)</td></tr>
+              <tr><th>パケット形式</th><td><code>風速[m/s],風向,気温[CR][LF]</code> (ASCIIプレーンテキスト)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>出力パケット・レンジ詳細</h3>
+        <div class="data-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>項目</th>
+                <th>データ範囲</th>
+                <th>フォーマット例</th>
+                <th>備考</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>風速 (Wind Speed)</strong></td>
+                <td><code>00.0</code> 〜 <code>99.9</code> [m/s]</td>
+                <td><code>12.3[m/s]</code></td>
+                <td>99.9は計測エラー値</td>
+              </tr>
+              <tr>
+                <td><strong>風向 (Wind Direction)</strong></td>
+                <td><code>000</code> 〜 <code>359</code> [度]</td>
+                <td><code>045</code></td>
+                <td>000: 北, 090: 東, 180: 南, 270: 西</td>
+              </tr>
+              <tr>
+                <td><strong>気温 (Temperature)</strong></td>
+                <td><code>-20.0</code> 〜 <code>+65.0</code> [℃]</td>
+                <td><code>+23.5</code> / <code>-05.2</code></td>
+                <td>符号付き小数点1桁固定</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <pre><code>// 実際の受信データ例:
+05.4[m/s],135,+21.8\r\n</code></pre>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- トップへ戻るボタン -->
+  <a href="#" class="btn-scroll-top" title="トップへ戻る">▲</a>
+
+  <!-- フッター -->
+  <footer class="manual-footer">
+    <p>かざみんリアルタイムモニター (Web Serial Monitor) ver.0.1.6</p>
+    <p style="margin-top:4px;">超音波風向風速計 かざみん (KZM100A / KZM100LR) 公式オンラインマニュアル</p>
+  </footer>
+
+</body>
+</html>
